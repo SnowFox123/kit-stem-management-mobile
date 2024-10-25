@@ -1,115 +1,20 @@
-import axios from "axios";
-import config from "../secret";
-// import { message } from "antd";
-import { PATH } from "../const/path";
-import { HttpStatus, roles } from '../enum';
-import { getUserFromLocalStorage } from "../utils";
+import axios from 'axios';
 
-export const axiosInstance = axios.create({
-  baseURL: config.BASE_URL,
+const axiosInstance = axios.create({
+  baseURL: 'http://localhost:8080/api', // Replace with your API base URL
   headers: {
-    'Content-Type': 'application/json'
-  },
-  timeout: 300000,
-  timeoutErrorMessage: 'Connection is timeout exceeded'
+    'Content-Type': 'application/json', // Adjust headers as needed
+  }
 });
 
-let isTokenExpired = false;
-
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
+// Add a response interceptor to return response.data
 axiosInstance.interceptors.response.use(
-  (response) => {
-    console.log(response);
-    if (response.status === HttpStatus.Success || response.status === HttpStatus.Created) {
-      return response.data;
-    }
-    return response;
-  },
-  (error) => {
-    if (error.response) {
-      const { data } = error.response;
-      console.log(error.response);
-      if (data.errors && data.errors.length > 0) {
-        data.errors.forEach((error) => {
-          // message.error(`${error.field}: ${error.message}`);
-          console.log(`${error.field}: ${error.message}`)
-        });
-      } else {
-        switch (error.response.status) {
-          case 401:
-          case 403: {
-            if (!isTokenExpired) {
-              isTokenExpired = true;
-              consol.log(data.message)
-              // message.error(data.message);
-              const user = getUserFromLocalStorage();
-              setTimeout(() => {
-                if (user) {
-                  const userRole = user.role;
-                  switch (userRole) {
-                    case roles.ADMIN:
-                      window.location.href = PATH.ADMIN_LOGIN;
-                      break;
-                    case roles.MANAGER:
-                      window.location.href = PATH.MANAGER_LOGIN;
-                      break;
-                    case roles.STAFF:
-                      window.location.href = PATH.STAFF;
-                      break;
-                    default:
-                      window.location.href = PATH.LOGIN;
-                      break;
-                  }
-                } else {
-                  return;
-                }
-                localStorage.clear();
-                isTokenExpired = false;
-              }, 1300);
-            }
-            break;
-          }
-
-          case 404:
-            // message.error(data.message);
-            console.log(data.message)
-
-            window.location.href = PATH.NOTFOUND;
-            break;
-
-          case 500:
-            // message.error(data.message);
-            console.log(data.message)
-
-            window.location.href = PATH.INTERNAL_SERVER_ERROR;
-            break;
-
-          default:
-            // message.error(data.message);
-            console.log(data.message)
-            break;
-        }
-      }
-
-      return Promise.reject(error.response.data);
-    } else {
-      // message.error('Network error');
-      console.log('Network error')
-      return Promise.reject(error);
-    }
+  response => response.data, // Intercept and return only the data part of the response
+  error => {
+    // Optional: You can log the error here for additional debugging
+    console.error('Axios error:', error.response || error.message);
+    return Promise.reject(error); // Forward any errors
   }
 );
 
-export default axiosInstance;
+export { axiosInstance };

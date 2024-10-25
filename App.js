@@ -11,6 +11,7 @@ import { StyleSheet } from "react-native";
 import Profile from "./components/Profile";
 import AllComments from "./components/AllComments";
 import Toast from "react-native-toast-message";
+import HomeScreen2 from "./components/HomeScreen2";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -20,7 +21,7 @@ const HomeStack = () => (
   <Stack.Navigator>
     <Stack.Screen
       name="HomeStackScreen"
-      component={HomeScreen}
+      component={HomeScreen2}
       options={{
         title: "Art Collection",
         headerTitleStyle: styles.headerTitle,

@@ -67,15 +67,30 @@ const HomeScreen = () => {
         try {
             const response = await axiosInstance.post('/kit/search', defaultPayload);
 
-            console.log(response);
+            console.log(response.data.pageData);
             // You can now uncomment the lines below to set your data
-            // setArttools(response.data);
-            // setFilteredArttools(response.data);
+            setArttools(response.data.pageData);
+            // setFilteredArttools(response.data.pageData);
+            console.log(filteredArttools)
             // setComments(response.data.comment || []);
         } catch (error) {
             console.error("Error fetching data: ", error);
         }
     };
+
+    // const fetchData = async () => {
+    //     try {
+    //         const response = await axiosInstance.post('/kit/search', defaultPayload);
+
+    //         console.log(response.data.pageData);
+    //         // You can now uncomment the lines below to set your data
+    //         // setArttools(response.data);
+    //         // setFilteredArttools(response.data);
+    //         // setComments(response.data.comment || []);
+    //     } catch (error) {
+    //         console.error("Error fetching data: ", error);
+    //     }
+    // };
 
 
     const loadFavorites = async () => {

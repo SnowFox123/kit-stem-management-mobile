@@ -1,32 +1,27 @@
 import { axiosInstance } from '../service/customize-axios';
 
-
-// services/kitService.js
-
-const defaultPayload = {
-    searchCondition: {
-        keyword: "",
-        category_id: "",
-        status: "",
-        is_deleted: false
-    },
-    pageInfo: {
-        pageNum: 1,
-        pageSize: 10
-    }
-};
-
-export const fetchData = async () => {
+export const getLab = async (payload) => {
     try {
-        const response = await axiosInstance.post('/kit/search', defaultPayload);
-        // console.log(response);
-        // Process the response or return it
-        return response.data;
+        const response = await axiosInstance.post('/kit/search', payload);
+        return response; // The interceptor returns only the data, so this is equivalent to returning response.data
     } catch (error) {
         console.error("Error fetching data: ", error);
-        throw error;
+        throw error; // Throw the error for handling in the component
     }
 };
+
+
+
+
+
+
+
+// Function to fetch data from the API
+
+
+
+
+
 
 
 
