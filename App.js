@@ -27,6 +27,22 @@ const HomeStack = () => (
       }}
     />
     <Stack.Screen
+      name="Kits"
+      component={HomeScreen}
+      options={{
+        title: "Kits Collection",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="Labs"
+      component={HomeScreen}
+      options={{
+        title: "Labs Collection",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
       name="Detailkits"
       component={Detailkits}
       options={{
@@ -96,6 +112,10 @@ const App = () => {
               iconName = "heart";
             } else if (route.name === "Profile") {
               iconName = "user";
+            } else if (route.name === "Kits") {
+              iconName = "wrench";
+            } else if (route.name === "Labs") {
+              iconName = "mortar-board";
             }
 
             return <Icon name={iconName} size={size} color={color} />;
@@ -108,6 +128,16 @@ const App = () => {
           name="Home"
           component={HomeStack}
           options={{ title: "Home", headerShown: false, unmountOnBlur: true }}
+        />
+        <Tab.Screen
+          name="Kits"
+          component={HomeStack}
+          options={{ title: "Kits", headerShown: false, unmountOnBlur: true }}
+        />
+        <Tab.Screen
+          name="Labs"
+          component={HomeStack}
+          options={{ title: "Labs", headerShown: false, unmountOnBlur: true }}
         />
         <Tab.Screen
           name="Favorites"

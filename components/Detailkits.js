@@ -50,7 +50,11 @@ const Detailkits = ({ route }) => {
             : [...favorites, id];
 
         setFavorites(updatedFavorites);
+
+        // Save the updated favorites list to AsyncStorage
         await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+
+        // Show a success toast for the favorite action
         Toast.show({
             text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
             position: 'top',
@@ -69,7 +73,7 @@ const Detailkits = ({ route }) => {
             <Text style={styles.labTitle}>{item.name}</Text>
             <Text style={styles.labDescription}>{item.description}</Text>
             <Text style={styles.labPrice}>Price: ${item.price.toFixed(2)}</Text>
-            <TouchableOpacity onPress={() => {/* Navigate to lab details */}}>
+            <TouchableOpacity onPress={() => {/* Navigate to lab details */ }}>
                 <Text style={styles.labLink}>View Lab Details</Text>
             </TouchableOpacity>
         </View>
@@ -89,7 +93,6 @@ const Detailkits = ({ route }) => {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <View style={styles.container}>
-                {/* Image and Favorite Icon Container */}
                 <View style={styles.imageContainer}>
                     <Image source={{ uri: kit.image_url }} style={styles.image} />
                     <TouchableOpacity onPress={() => toggleFavorite(kit._id)} style={styles.favoriteIcon}>
@@ -99,9 +102,11 @@ const Detailkits = ({ route }) => {
                 <View style={styles.detailsContainer}>
                     <Text style={styles.title}>{kit.name}</Text>
                     <View style={styles.priceContainer}>
-                        <Text style={styles.price}>
+                        <Text style={styles.originalPrice}>${kit.price.toFixed(2)}</Text>
+                        <Text style={styles.finalPrice}>
                             ${newPriceAfterDiscount(kit.price, kit.discount).toFixed(2)}
                         </Text>
+                        <Text style={styles.discount}>-{(kit.discount * 100).toFixed(0)}%</Text>
                     </View>
                     <Text style={styles.category}>{kit.category_name}</Text>
                     <Text style={styles.descriptionTitle}>Description:</Text>
@@ -149,7 +154,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 10,
         right: 10,
-        backgroundColor: '#FFFFFFCC',  // Semi-transparent white background
+        backgroundColor: '#FFFFFFCC',
         borderRadius: 20,
         padding: 8,
     },
@@ -164,15 +169,31 @@ const styles = StyleSheet.create({
         marginVertical: 8,
     },
     priceContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        flexDirection: 'row',       // Aligns items horizontally
+        alignItems: 'center',       // Vertically center aligns the items
+        justifyContent: '',  // Distributes space between items
         marginBottom: 16,
     },
-    price: {
+    originalPrice: {
+        fontSize: 18,
+        color: '#ccc',
+        textDecorationLine: 'line-through',
+        marginRight: 8,
+    },
+    finalPrice: {
         fontSize: 24,
         fontWeight: '700',
         color: '#FF424E',
+        marginHorizontal: 8,        // Adds space between final price and discount
+    },
+    discount: {
+        fontSize: 18,
+        color: '#FF424E',
+        fontWeight: 'bold',
+        backgroundColor: '#FFD700',
+        paddingHorizontal: 10,
+        paddingVertical: 1,
+        alignSelf: 'center',
     },
     category: {
         fontSize: 14,
