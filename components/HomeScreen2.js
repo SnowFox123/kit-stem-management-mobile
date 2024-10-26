@@ -26,6 +26,8 @@ const HomeScreen2 = () => {
             try {
                 const result = await getKit(payload);
                 setData(result.data.pageData);
+                console.log(result.data.pageData)
+                console.log()
             } catch (err) {
                 setError(err);
             } finally {
@@ -54,9 +56,9 @@ const HomeScreen2 = () => {
 
     const renderCard = ({ item }) => (
         <View style={styles.card}>
-            {/* <Image source={{ uri: item.image_url }} style={styles.image} /> */}
+            <Image source={{ uri: item.image_url }} style={styles.image} />
             <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.description}>{item.description}</Text>
+            {/* <Text style={styles.description}>{item.description}</Text> */}
             <Text style={styles.price}>Price: ${item.price} (Discount: {item.discount}%)</Text>
             <Text style={styles.status}>Status: {item.status}</Text>
         </View>

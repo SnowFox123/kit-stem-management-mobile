@@ -10,7 +10,8 @@ import FavoritesScreen from "./components/FavoritesScreen";
 import Detailarttool from "./components/Detailarttool";
 import Profile from "./components/Profile";
 import AllComments from "./components/AllComments";
-import HomeScreen2 from "./components/HomeScreen2";
+// import HomeScreen2 from "./components/HomeScreen2";
+import HomeScreen from "./components/HomeScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -19,9 +20,9 @@ const HomeStack = () => (
   <Stack.Navigator>
     <Stack.Screen
       name="HomeStackScreen"
-      component={HomeScreen2}
+      component={HomeScreen}
       options={{
-        title: "Kit Collection",
+        title: "Kits Collection",
         headerTitleStyle: styles.headerTitle,
       }}
     />

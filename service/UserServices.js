@@ -4,7 +4,7 @@ export const getKit = async (payload) => {
     try {
         const response = await axiosInstance.post('/kit/search', payload);
 
-        console.log(response)
+        // console.log(response)
         return response; // The interceptor returns only the data, so this is equivalent to returning response.data
     } catch (error) {
         console.error("Error fetching data: ", error);
