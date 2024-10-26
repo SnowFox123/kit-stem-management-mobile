@@ -3,27 +3,25 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/FontAwesome";
-
-import HomeScreen from "./components/HomeScreen"; // Import HomeScreen
-import FavoritesScreen from "./components/FavoritesScreen"; // Import FavoritesScreen
-import Detailarttool from "./components/Detailarttool"; // Import the detail screen
 import { StyleSheet } from "react-native";
+import Toast from "react-native-toast-message";
+
+import FavoritesScreen from "./components/FavoritesScreen";
+import Detailarttool from "./components/Detailarttool";
 import Profile from "./components/Profile";
 import AllComments from "./components/AllComments";
-import Toast from "react-native-toast-message";
 import HomeScreen2 from "./components/HomeScreen2";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Create a Stack for Home and Details screens
 const HomeStack = () => (
   <Stack.Navigator>
     <Stack.Screen
       name="HomeStackScreen"
       component={HomeScreen2}
       options={{
-        title: "Art Collection",
+        title: "Kit Collection",
         headerTitleStyle: styles.headerTitle,
       }}
     />
@@ -54,7 +52,6 @@ const HomeStack = () => (
   </Stack.Navigator>
 );
 
-// Create a Stack for Favorites and Details screens
 const FavoritesStack = () => (
   <Stack.Navigator>
     <Stack.Screen
@@ -97,7 +94,7 @@ const App = () => {
             } else if (route.name === "Favorites") {
               iconName = "heart";
             } else if (route.name === "Profile") {
-              iconName = "user"
+              iconName = "user";
             }
 
             return <Icon name={iconName} size={size} color={color} />;
@@ -122,7 +119,9 @@ const App = () => {
           options={{ title: "Profile", headerShown: false, unmountOnBlur: true }}
         />
       </Tab.Navigator>
-      <Toast ref={(ref) => Toast.setRef(ref)} />
+
+      {/* Place Toast at the root level to be globally available */}
+      <Toast />
     </NavigationContainer>
   );
 };

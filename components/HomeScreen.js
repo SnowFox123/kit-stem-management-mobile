@@ -8,6 +8,9 @@ import { ScrollView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import axiosInstance from '../service/customize-axios';
 
+import { getLab } from '../service/UserServices'; // Ensure the path is correct
+
+
 const HomeScreen = () => {
     const [arttools, setArttools] = useState([]);
     const [filteredArttools, setFilteredArttools] = useState([]);
@@ -18,8 +21,16 @@ const HomeScreen = () => {
     const [suggestions, setSuggestions] = useState([]);
     const [comments, setComments] = useState([]);
 
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+
     const searchInputRef = useRef(null);
     const navigation = useNavigation();
+
+
+
 
     useEffect(() => {
         fetchData();
@@ -49,10 +60,10 @@ const HomeScreen = () => {
         );
     }
 
-    const defaultPayload = {
+    const payload = {
         searchCondition: {
-            keyword: "",
-            category_id: "",
+            keyword: "", // Add a search term if needed
+            category_id: "", // Add a category ID if needed
             status: "",
             is_deleted: false
         },
@@ -62,21 +73,49 @@ const HomeScreen = () => {
         }
     };
 
-    // Define fetchData function
     const fetchData = async () => {
+        setLoading(true);
         try {
-            const response = await axiosInstance.post('/kit/search', defaultPayload);
+            const result = await getLab(payload);
 
-            console.log(response.data.pageData);
-            // You can now uncomment the lines below to set your data
-            setArttools(response.data.pageData);
-            // setFilteredArttools(response.data.pageData);
-            console.log(filteredArttools)
-            // setComments(response.data.comment || []);
-        } catch (error) {
-            console.error("Error fetching data: ", error);
+            console.log(result.data.pageData)
+            setArttools(result.data.pageData);
+        } catch (err) {
+            setError(err);
+        } finally {
+            setLoading(false);
         }
     };
+
+
+    // const defaultPayload = {
+    //     searchCondition: {
+    //         keyword: "",
+    //         category_id: "",
+    //         status: "",
+    //         is_deleted: false
+    //     },
+    //     pageInfo: {
+    //         pageNum: 1,
+    //         pageSize: 10
+    //     }
+    // };
+
+    // Define fetchData function
+    // const fetchData = async () => {
+    //     try {
+    //         const response = await axiosInstance.post('/kit/search', defaultPayload);
+
+    //         console.log(response.data.pageData);
+    //         // You can now uncomment the lines below to set your data
+    //         setArttools(response.data.pageData);
+    //         // setFilteredArttools(response.data.pageData);
+    //         console.log(filteredArttools)
+    //         // setComments(response.data.comment || []);
+    //     } catch (error) {
+    //         console.error("Error fetching data: ", error);
+    //     }
+    // };
 
     // const fetchData = async () => {
     //     try {
@@ -163,9 +202,9 @@ const HomeScreen = () => {
 
 
     const renderItem = ({ item, index }) => {
-        const averageRating = calculateAverageRating(item.comment);
-        const isLastItem = index === filteredArttools.length - 1;
-        const isOdd = filteredArttools.length % 2 !== 0;
+        // const averageRating = calculateAverageRating(item.comment);
+        // const isLastItem = index === filteredArttools.length - 1;
+        // const isOdd = filteredArttools.length % 2 !== 0;
         return (
             <>
                 <TouchableOpacity

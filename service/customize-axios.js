@@ -1,11 +1,13 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/api', // Replace with your API base URL
+  baseURL: 'http://192.168.1.3:8080/api',
   headers: {
-    'Content-Type': 'application/json', // Adjust headers as needed
-  }
+    'Content-Type': 'application/json',
+  },
+  timeout: 10000, // 10 seconds
 });
+
 
 // Add a response interceptor to return response.data
 axiosInstance.interceptors.response.use(
