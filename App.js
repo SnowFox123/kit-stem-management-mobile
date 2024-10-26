@@ -7,7 +7,7 @@ import { StyleSheet } from "react-native";
 import Toast from "react-native-toast-message";
 
 import FavoritesScreen from "./components/FavoritesScreen";
-import Detailarttool from "./components/Detailarttool";
+import Detailkits from "./components/Detailkits";
 import Profile from "./components/Profile";
 import AllComments from "./components/AllComments";
 // import HomeScreen2 from "./components/HomeScreen2";
@@ -27,8 +27,8 @@ const HomeStack = () => (
       }}
     />
     <Stack.Screen
-      name="Detailarttool"
-      component={Detailarttool}
+      name="Detailkits"
+      component={Detailkits}
       options={{
         title: "Art Details",
         headerTitleStyle: styles.headerTitle,

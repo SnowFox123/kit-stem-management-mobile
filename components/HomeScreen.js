@@ -20,13 +20,13 @@ const HomeScreen = () => {
 
     useEffect(() => {
         fetchData();
-        loadFavorites();
+        // loadFavorites();
     }, []);
 
     useFocusEffect(
         useCallback(() => {
             fetchData();
-            loadFavorites();
+            // loadFavorites();
         }, [])
     );
 
@@ -63,14 +63,14 @@ const HomeScreen = () => {
         }
     };
 
-    const loadFavorites = async () => {
-        try {
-            const storedFavorites = await AsyncStorage.getItem('favorites');
-            setFavorites(storedFavorites ? JSON.parse(storedFavorites) : []);
-        } catch (error) {
-            console.error("Error loading favorites: ", error);
-        }
-    };
+    // const loadFavorites = async () => {
+    //     try {
+    //         const storedFavorites = await AsyncStorage.getItem('favorites');
+    //         setFavorites(storedFavorites ? JSON.parse(storedFavorites) : []);
+    //     } catch (error) {
+    //         console.error("Error loading favorites: ", error);
+    //     }
+    // };
 
     const formatDiscount = (discount) => `${(discount * 100).toFixed(0)}%`;
 
@@ -112,7 +112,7 @@ const HomeScreen = () => {
     
         return (
             <TouchableOpacity
-                onPress={() => navigation.navigate('Detailarttool', { arttoolId: item._id })}
+                onPress={() => navigation.navigate('Detailkits', { kitId: item._id })}
                 style={styles.card}
             >
                  <Image

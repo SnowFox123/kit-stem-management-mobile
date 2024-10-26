@@ -13,6 +13,18 @@ export const getKit = async (payload) => {
 };
 
 
+export const getKitByID = async (id) => {
+    try {
+        const response = await axiosInstance.get(`/client/kit/${id}`);
+
+        // console.log(response)
+        return response; // The interceptor returns only the data, so this is equivalent to returning response.data
+    } catch (error) {
+        console.error("Error fetching data: ", error);
+        throw error; // Throw the error for handling in the component
+    }
+};
+
 
 
 
