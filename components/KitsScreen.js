@@ -20,13 +20,13 @@ const KitsScreen = () => {
 
     useEffect(() => {
         fetchData();
-        // loadFavorites();
+        loadFavorites(); // Load favorites on component mount
     }, []);
 
     useFocusEffect(
         useCallback(() => {
             fetchData();
-            // loadFavorites();
+            loadFavorites(); // Load favorites when focused
         }, [])
     );
 
@@ -63,14 +63,14 @@ const KitsScreen = () => {
         }
     };
 
-    // const loadFavorites = async () => {
-    //     try {
-    //         const storedFavorites = await AsyncStorage.getItem('favorites');
-    //         setFavorites(storedFavorites ? JSON.parse(storedFavorites) : []);
-    //     } catch (error) {
-    //         console.error("Error loading favorites: ", error);
-    //     }
-    // };
+    const loadFavorites = async () => {
+        try {
+            const storedFavorites = await AsyncStorage.getItem('favoriteskits');
+            setFavorites(storedFavorites ? JSON.parse(storedFavorites) : []);
+        } catch (error) {
+            console.error("Error loading favorites: ", error);
+        }
+    };
 
     const formatDiscount = (discount) => `${(discount * 100).toFixed(0)}%`;
 
@@ -95,7 +95,7 @@ const KitsScreen = () => {
             ? favorites.filter(favId => favId !== id)
             : [...favorites, id];
         setFavorites(updatedFavorites);
-        await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+        await AsyncStorage.setItem('favoriteskits', JSON.stringify(updatedFavorites));
         Toast.show({
             text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
             position: 'top',
@@ -116,10 +116,10 @@ const KitsScreen = () => {
                 style={styles.card}
             >
                  <Image
-                source={{ uri: item.image_url }}  // Load the image from the provided URL
-                style={styles.cardImage}           // Apply styles defined for the image
-                resizeMode="contain"               // Maintain aspect ratio while fitting the image
-            />
+                    source={{ uri: item.image_url }}  
+                    style={styles.cardImage}           
+                    resizeMode="contain"               
+                />
                 <TouchableOpacity style={styles.favoriteButton} onPress={() => toggleFavorite(item._id)}>
                     <Icon
                         name={favorites.includes(item._id) ? 'heart' : 'heart-o'}
@@ -135,10 +135,10 @@ const KitsScreen = () => {
                 </View>
     
                 <View style={styles.priceGroup}>
+                    <Text style={styles.price}>${discountedPrice}</Text>
                     {item.discount > 0 && (
                         <Text style={styles.oldPrice}>${item.price.toFixed(2)}</Text>
                     )}
-                    <Text style={styles.price}>${discountedPrice}</Text>
                 </View>
     
                 <View style={styles.categorySoldContainer}>
@@ -149,7 +149,7 @@ const KitsScreen = () => {
                 <View style={styles.discountPosition}>
                     {item.discount > 0 ? (
                         <View style={styles.discountBadge}>
-                            <Text style={{ color: '#FF6347', fontWeight: '400' }}>{formatDiscount(item.discount)}</Text>
+                            <Text style={{ color: 'rgb(0, 110, 173)', fontWeight: '400' }}>{formatDiscount(item.discount)}</Text>
                         </View>
                     ) : null}
                 </View>
@@ -216,7 +216,7 @@ const KitsScreen = () => {
 
             {isLoading ? (
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#FF6347" />
+                    <ActivityIndicator size="large" color="rgb(0, 110, 173)" />
                     <Text style={styles.loadingText}>Fetching Art Tool Details...</Text>
                 </View>
             ) : (
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     },
     searchButton: {
         paddingHorizontal: 10,
-        backgroundColor: '#FF6347',
+        backgroundColor: 'rgb(0, 110, 173)',
         borderRadius: 5,
         marginLeft: 5,
         height: 40,
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     selectedCategoryButton: {
-        backgroundColor: '#FF6347',
+        backgroundColor: 'rgb(0, 110, 173)',
     },
     categoryText: {
         fontSize: 14,
@@ -342,12 +342,12 @@ const styles = StyleSheet.create({
     oldPrice: {
         textDecorationLine: 'line-through',
         color: 'grey',
-        marginRight: 5,
     },
     price: {
         fontWeight: 'bold',
         fontSize: 16,
-        color: '#FF6347',
+        color: 'rgb(0, 110, 173)',
+        marginRight: 5,
     },
     brand: {
         marginTop: 5,
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     },
     loadingText: {
         marginTop: 10,
-        color: '#FF6347',
+        color: 'rgb(0, 110, 173)',
     },
 });
 

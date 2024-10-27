@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, Image, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -14,13 +14,11 @@ const Detailkits = ({ route }) => {
     useEffect(() => {
         fetchKitDetails();
         loadFavorites();
-    }, [kitId]); // Thêm `kitId` để đảm bảo `fetchKitDetails` chạy lại khi kitId thay đổi
-
+    }, [kitId]);
 
     const fetchKitDetails = async () => {
         try {
             const response = await getKitByID(kitId);
-            console.log('API Response:', response); // Kiểm tra xem response có dữ liệu không
             if (response && response.length > 0) {
                 setKit(response[0]);
             }
@@ -36,7 +34,6 @@ const Detailkits = ({ route }) => {
             });
         }
     };
-
 
     const loadFavorites = async () => {
         try {
@@ -55,11 +52,8 @@ const Detailkits = ({ route }) => {
             : [...favorites, id];
 
         setFavorites(updatedFavorites);
-
-        // Save the updated favorites list to AsyncStorage
         await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavorites));
 
-        // Show a success toast for the favorite action
         Toast.show({
             text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
             position: 'top',
@@ -72,17 +66,6 @@ const Detailkits = ({ route }) => {
     const newPriceAfterDiscount = (price, discount) => {
         return price * (1 - discount);
     };
-
-    const renderLabItem = ({ item }) => (
-        <View style={styles.labItem}>
-            <Text style={styles.labTitle}>{item.name}</Text>
-            <Text style={styles.labDescription}>{item.description}</Text>
-            <Text style={styles.labPrice}>Price: ${item.price.toFixed(2)}</Text>
-            <TouchableOpacity onPress={() => {/* Navigate to lab details */ }}>
-                <Text style={styles.labLink}>View Lab Details</Text>
-            </TouchableOpacity>
-        </View>
-    );
 
     if (!kit) {
         return (
@@ -97,7 +80,7 @@ const Detailkits = ({ route }) => {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <View style={styles.container}>
+            <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.imageContainer}>
                     <Image source={{ uri: kit.image_url }} style={styles.image} resizeMode="contain" />
                     <TouchableOpacity onPress={() => toggleFavorite(kit._id)} style={styles.favoriteIcon}>
@@ -107,10 +90,10 @@ const Detailkits = ({ route }) => {
                 <View style={styles.detailsContainer}>
                     <Text style={styles.title}>{kit.name}</Text>
                     <View style={styles.priceContainer}>
-                        <Text style={styles.originalPrice}>${kit.price.toFixed(2)}</Text>
                         <Text style={styles.finalPrice}>
                             ${newPriceAfterDiscount(kit.price, kit.discount).toFixed(2)}
                         </Text>
+                        <Text style={styles.originalPrice}>${kit.price.toFixed(2)}</Text>
                         <Text style={styles.discount}>-{(kit.discount * 100).toFixed(0)}%</Text>
                     </View>
                     <Text style={styles.category}>{kit.category_name}</Text>
@@ -118,22 +101,31 @@ const Detailkits = ({ route }) => {
                     <Text style={styles.description}>{kit.description}</Text>
 
                     {/* Render only available Labs */}
-                    <Text style={styles.labsTitle}>Associated Labs:</Text>
-                    <FlatList
-                        data={availableLabs}
-                        renderItem={renderLabItem}
-                        keyExtractor={(item) => item._id}
-                        ListEmptyComponent={<Text style={styles.noLabsText}>No available labs.</Text>}
-                    />
+                    <Text style={styles.labsTitle}>Recommended Labs:</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScrollView}>
+                        {availableLabs.map((lab) => (
+                            <View key={lab._id} style={styles.labItem}>
+                                <Text style={styles.labTitle}>{lab.name}</Text>
+                                <Text style={styles.labDescription}>{lab.description}</Text>
+                                <Text style={styles.labPrice}>Price: ${lab.price.toFixed(2)}</Text>
+                                <TouchableOpacity onPress={() => {/* Navigate to lab details */ }}>
+                                    <Text style={styles.labLink}>View Lab Details</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+                        {availableLabs.length === 0 && (
+                            <Text style={styles.noLabsText}>No available labs.</Text>
+                        )}
+                    </ScrollView>
                 </View>
-            </View>
+            </ScrollView>
         </GestureHandlerRootView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flexGrow: 1,
         backgroundColor: '#FFFFFF',
     },
     loadingContainer: {
@@ -174,22 +166,20 @@ const styles = StyleSheet.create({
         marginVertical: 8,
     },
     priceContainer: {
-        flexDirection: 'row',       // Aligns items horizontally
-        alignItems: 'center',       // Vertically center aligns the items
-        justifyContent: '',  // Distributes space between items
+        flexDirection: 'row',
+        alignItems: 'center',
         marginBottom: 16,
     },
     originalPrice: {
         fontSize: 18,
         color: '#ccc',
         textDecorationLine: 'line-through',
-        marginRight: 8,
+        marginHorizontal: 8,
     },
     finalPrice: {
         fontSize: 24,
         fontWeight: '700',
-        color: '#FF424E',
-        marginHorizontal: 8,        // Adds space between final price and discount
+        color: 'rgb(0, 110, 173)',
     },
     discount: {
         fontSize: 18,
@@ -201,8 +191,8 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     category: {
-        fontSize: 14,
-        color: '#888888',
+        fontSize: 16,
+        color: 'rgb(0, 110, 173)',
         marginVertical: 4,
     },
     descriptionTitle: {
@@ -212,7 +202,7 @@ const styles = StyleSheet.create({
         color: '#333333',
     },
     description: {
-        fontSize: 14,
+        fontSize: 18,
         color: '#666666',
         lineHeight: 22,
     },
@@ -222,9 +212,13 @@ const styles = StyleSheet.create({
         color: '#333333',
         marginVertical: 15,
     },
+    horizontalScrollView: {
+        marginVertical: 10,
+    },
     labItem: {
+        width: 200,
         padding: 15,
-        marginVertical: 5,
+        marginHorizontal: 5,
         backgroundColor: '#FFFFFF',
         borderRadius: 8,
         shadowColor: '#000',

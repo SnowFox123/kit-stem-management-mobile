@@ -168,7 +168,7 @@ const App = () => {
 
             return <Icon name={iconName} size={size} color={color} />;
           },
-          tabBarActiveTintColor: "#FF6347",
+          tabBarActiveTintColor: "rgb(0, 110, 173)",
           tabBarInactiveTintColor: "gray",
         })}
       >

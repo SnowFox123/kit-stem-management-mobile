@@ -45,7 +45,7 @@ const HomeScreen = () => {
                 pageInfo: { pageNum: 1, pageSize: 10 }
             };
             const response = await getKit(payload);
-            
+
             const validData = response.data.pageData.filter(item => !item.is_deleted);
             setData(validData);
             setFilteredArttools(validData);
@@ -84,8 +84,8 @@ const HomeScreen = () => {
 
     const filterByCategory = (category) => {
         setSelectedCategory(category);
-        setFilteredArttools(category === 'All' 
-            ? data 
+        setFilteredArttools(category === 'All'
+            ? data
             : data.filter(item => item.category_name === category && !item.is_deleted)
         );
     };
@@ -109,17 +109,17 @@ const HomeScreen = () => {
         const discountedPrice = item.discount
             ? (item.price * (1 - item.discount)).toFixed(2)
             : item.price.toFixed(2);
-    
+
         return (
             <TouchableOpacity
                 onPress={() => navigation.navigate('Detailkits', { kitId: item._id })}
                 style={styles.card}
             >
-                 <Image
-                source={{ uri: item.image_url }}  // Load the image from the provided URL
-                style={styles.cardImage}           // Apply styles defined for the image
-                resizeMode="contain"               // Maintain aspect ratio while fitting the image
-            />
+                <Image
+                    source={{ uri: item.image_url }}  // Load the image from the provided URL
+                    style={styles.cardImage}           // Apply styles defined for the image
+                    resizeMode="contain"               // Maintain aspect ratio while fitting the image
+                />
                 <TouchableOpacity style={styles.favoriteButton} onPress={() => toggleFavorite(item._id)}>
                     <Icon
                         name={favorites.includes(item._id) ? 'heart' : 'heart-o'}
@@ -128,19 +128,19 @@ const HomeScreen = () => {
                     />
                 </TouchableOpacity>
                 <Text style={styles.artName} numberOfLines={2}>{item.name}</Text>
-    
+
                 <View style={styles.ratingContainer}>
                     <Icon name="star" size={14} color="#FFD700" />
                     <Text style={styles.averageRating}>sao</Text>
                 </View>
-    
+
                 <View style={styles.priceGroup}>
+                    <Text style={styles.price}>${discountedPrice}</Text>
                     {item.discount > 0 && (
                         <Text style={styles.oldPrice}>${item.price.toFixed(2)}</Text>
                     )}
-                    <Text style={styles.price}>${discountedPrice}</Text>
                 </View>
-    
+
                 <View style={styles.categorySoldContainer}>
                     <Text style={styles.brand}>{item.category_name}</Text>
                     <Text style={styles.soldText}>Sold 1.1k</Text>
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     },
     searchButton: {
         paddingHorizontal: 10,
-        backgroundColor: '#FF6347',
+        backgroundColor: 'rgb(0, 110, 173)',
         borderRadius: 5,
         marginLeft: 5,
         height: 40,
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     selectedCategoryButton: {
-        backgroundColor: '#FF6347',
+        backgroundColor: 'rgb(0, 110, 173)',
     },
     categoryText: {
         fontSize: 14,
@@ -342,12 +342,12 @@ const styles = StyleSheet.create({
     oldPrice: {
         textDecorationLine: 'line-through',
         color: 'grey',
-        marginRight: 5,
     },
     price: {
         fontWeight: 'bold',
         fontSize: 16,
         color: '#FF6347',
+        marginRight: 5,
     },
     brand: {
         marginTop: 5,

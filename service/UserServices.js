@@ -25,6 +25,18 @@ export const getKitByID = async (id) => {
     }
 };
 
+export const getKitFavoriteByID = async (id) => {
+    try {
+        const response = await axiosInstance.get(`/client/kit/${id}`);
+
+        // console.log(response)
+        return response.data; // Giả sử data là mảng, lấy phần tử đầu tiên
+    } catch (error) {
+        console.error("Error fetching data: ", error);
+        throw error; // Throw the error for handling in the component
+    }
+};
+
 
 
 
