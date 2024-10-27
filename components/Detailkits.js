@@ -19,7 +19,7 @@ const Detailkits = ({ route }) => {
     const fetchKitDetails = async () => {
         try {
             const response = await getKitByID(kitId);
-            if (response && response.length > 0) {
+            if (response) {
                 setKit(response[0]);
             }
         } catch (error) {

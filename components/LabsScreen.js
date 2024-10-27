@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Modal } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
-import { getLabs } from '../service/UserServices';
-import { WebView } from 'react-native-webview';
+import { getKit, getLabs } from '../service/UserServices';
 
 const LabsScreen = () => {
     const [data, setData] = useState([]);
@@ -15,20 +14,18 @@ const LabsScreen = () => {
     const [favorites, setFavorites] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-    const [videoUrl, setVideoUrl] = useState(null);
-    const [isModalVisible, setModalVisible] = useState(false);
     const searchInputRef = useRef(null);
     const navigation = useNavigation();
 
     useEffect(() => {
         fetchData();
-        loadFavorites();
+        loadFavorites(); // Load favorites on component mount
     }, []);
 
     useFocusEffect(
         useCallback(() => {
             fetchData();
-            loadFavorites();
+            loadFavorites(); // Load favorites when focused
         }, [])
     );
 
@@ -44,9 +41,10 @@ const LabsScreen = () => {
         try {
             const payload = {
                 searchCondition: { keyword: "", category_id: "", status: "", is_deleted: false },
-                pageInfo: { pageNum: 1, pageSize: 100 }
+                pageInfo: { pageNum: 1, pageSize: 100 }  // Adjusted page size for new data structure
             };
             const response = await getLabs(payload);
+
             const validData = response.data.pageData.filter(item => !item.is_deleted);
             setData(validData);
             setFilteredLabs(validData);
@@ -113,14 +111,11 @@ const LabsScreen = () => {
 
         return (
             <TouchableOpacity
-                onPress={() => {
-                    setVideoUrl(item.lab_url);
-                    setModalVisible(true);
-                }}
+                onPress={() => navigation.navigate('Detaillabs', { kitId: item._id })}
                 style={styles.card}
             >
                 <Image
-                    source={{ uri: item.lab_url }} // Assuming the lab URL is an image
+                    source={{ uri: item.lab_url }}
                     style={styles.cardImage}
                     resizeMode="contain"
                 />
@@ -160,6 +155,7 @@ const LabsScreen = () => {
         );
     };
 
+
     const handleSearch = () => {
         const query = searchQuery.toLowerCase();
         if (query) {
@@ -184,7 +180,7 @@ const LabsScreen = () => {
                 <TextInput
                     ref={searchInputRef}
                     style={styles.searchInput}
-                    placeholder="Search by lab name..."
+                    placeholder="Search by labs name..."
                     value={searchQuery}
                     onChangeText={handleSearchChange}
                     onSubmitEditing={handleSearch}
@@ -211,7 +207,7 @@ const LabsScreen = () => {
                         onPress={() => filterByCategory(category.name)}
                     >
                         <Text style={[styles.categoryText, selectedCategory === category.name && styles.categoryTextActive]}>
-                            {category.name} ({category.count})
+                            {category.name} ({category.count})  {/* Make sure this text is wrapped in Text component */}
                         </Text>
                     </TouchableOpacity>
                 ))}
@@ -231,81 +227,149 @@ const LabsScreen = () => {
                     contentContainerStyle={{ paddingBottom: 100 }}
                 />
             )}
-
-            {/* Modal for Video Playback */}
-            <Modal
-                visible={isModalVisible}
-                onRequestClose={() => setModalVisible(false)}
-                transparent={true}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-                            <Icon name="times" size={30} color="black" />
-                        </TouchableOpacity>
-                        {videoUrl && (
-                            <WebView
-                                source={{ uri: videoUrl }}
-                                style={{ flex: 1 }}
-                                javaScriptEnabled={true}
-                                domStorageEnabled={true}
-                            />
-                        )}
-                    </View>
-                </View>
-            </Modal>
         </View>
     );
 };
 
-// Styles for modal and other components
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
-        backgroundColor: '#ffffff',
+        padding: 10,
+        backgroundColor: '#fff',
     },
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 10,
     },
     searchInput: {
         flex: 1,
+        height: 40,
+        borderColor: '#ddd',
         borderWidth: 1,
-        borderColor: '#ccc',
         borderRadius: 5,
-        padding: 10,
-        marginRight: 10,
+        paddingHorizontal: 10,
     },
     searchButton: {
+        paddingHorizontal: 10,
         backgroundColor: 'rgb(0, 110, 173)',
-        padding: 10,
         borderRadius: 5,
+        marginLeft: 5,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    categorySoldContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 5,
     },
     searchButtonText: {
         color: '#fff',
+        fontSize: 14,
     },
     clearButton: {
+        paddingHorizontal: 10,
+        paddingVertical: 5,
         marginLeft: 10,
+        backgroundColor: 'grey',
+        borderRadius: 20,
     },
     categoryContainer: {
-        paddingVertical: 10,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginBottom: 10,
+        height: 40,
     },
     categoryButton: {
-        marginRight: 10,
-        padding: 10,
-        backgroundColor: '#f0f0f0',
+        padding: 7.5,
         borderRadius: 5,
+        backgroundColor: '#f0f0f0',
+        marginHorizontal: 5,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     selectedCategoryButton: {
         backgroundColor: 'rgb(0, 110, 173)',
     },
     categoryText: {
+        fontSize: 14,
         color: '#000',
     },
     categoryTextActive: {
         color: '#fff',
+    },
+    card: {
+        width: '48%',
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 10,
+        padding: 10,
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    cardImage: {
+        width: '100%',
+        height: 150,
+        borderRadius: 10,
+    },
+    favoriteButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        zIndex: 1,
+    },
+    artName: {
+        fontWeight: 'bold',
+        marginTop: 5,
+    },
+    ratingContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 5,
+    },
+    averageRating: {
+        marginLeft: 5,
+    },
+    priceGroup: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 5,
+    },
+    oldPrice: {
+        textDecorationLine: 'line-through',
+        color: 'grey',
+    },
+    price: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        color: 'rgb(0, 110, 173)',
+        marginRight: 5,
+    },
+    brand: {
+        marginTop: 5,
+        fontStyle: 'italic',
+    },
+    soldText: {
+        marginTop: 5,
+        color: 'grey',
+    },
+    discountPosition: {
+        position: 'absolute',
+        top: 1,
+        left: 1
+    },
+    discountBadge: {
+        backgroundColor: '#FFD700',
+        paddingHorizontal: 10,
+        paddingVertical: 1,
+        alignSelf: 'center',
+    },
+    discountText: {
+        color: '#fff',
+        fontSize: 12,
     },
     loadingContainer: {
         flex: 1,
@@ -314,100 +378,7 @@ const styles = StyleSheet.create({
     },
     loadingText: {
         marginTop: 10,
-    },
-    card: {
-        flex: 1,
-        margin: 10,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 5,
-        overflow: 'hidden',
-        backgroundColor: '#fff',
-        position: 'relative',
-    },
-    cardImage: {
-        width: '100%',
-        height: 120,
-    },
-    favoriteButton: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-    },
-    artName: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginVertical: 5,
-    },
-    description: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 5,
-    },
-    ratingContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    averageRating: {
-        marginLeft: 5,
-    },
-    priceGroup: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 5,
-    },
-    price: {
-        fontSize: 16,
-        fontWeight: 'bold',
         color: 'rgb(0, 110, 173)',
-    },
-    oldPrice: {
-        fontSize: 14,
-        textDecorationLine: 'line-through',
-        marginLeft: 10,
-        color: '#999',
-    },
-    categorySoldContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginVertical: 5,
-    },
-    brand: {
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
-    soldText: {
-        fontSize: 14,
-        color: '#666',
-    },
-    discountPosition: {
-        position: 'absolute',
-        top: 10,
-        left: 10,
-    },
-    discountBadge: {
-        backgroundColor: '#f0c040',
-        borderRadius: 5,
-        padding: 5,
-    },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    },
-    modalContent: {
-        width: '90%',
-        height: '80%',
-        backgroundColor: 'white',
-        borderRadius: 10,
-        overflow: 'hidden',
-    },
-    closeButton: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        zIndex: 1,
     },
 });
 

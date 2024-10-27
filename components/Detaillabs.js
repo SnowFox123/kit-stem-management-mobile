@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
-import { getKitByID } from '../service/UserServices';
+import { getLabByID } from '../service/UserServices';
 
 const Detaillabs = ({ route }) => {
     const { kitId } = route.params;
@@ -18,7 +18,7 @@ const Detaillabs = ({ route }) => {
 
     const fetchKitDetails = async () => {
         try {
-            const response = await getKitByID(kitId);
+            const response = await getLabByID(kitId);
             if (response && response.length > 0) {
                 setKit(response[0]);
             }
