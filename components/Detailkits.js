@@ -24,14 +24,14 @@ const Detailkits = ({ route }) => {
             }
         } catch (error) {
             console.error("Error fetching kit details: ", error);
-            Toast.show({
-                text1: 'Error fetching kit details',
-                text2: 'Please try again later.',
-                position: 'top',
-                type: 'error',
-                visibilityTime: 2000,
-                autoHide: true,
-            });
+            // Toast.show({
+            //     text1: 'Error fetching kit details',
+            //     text2: 'Please try again later.',
+            //     position: 'top',
+            //     type: 'error',
+            //     visibilityTime: 2000,
+            //     autoHide: true,
+            // });
         }
     };
 
@@ -54,13 +54,13 @@ const Detailkits = ({ route }) => {
         setFavorites(updatedFavorites);
         await AsyncStorage.setItem('favoriteskits', JSON.stringify(updatedFavorites));
 
-        Toast.show({
-            text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
-            position: 'top',
-            type: 'success',
-            visibilityTime: 2000,
-            autoHide: true,
-        });
+        // Toast.show({
+        //     text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
+        //     position: 'top',
+        //     type: 'success',
+        //     visibilityTime: 2000,
+        //     autoHide: true,
+        // });
     };
 
     const newPriceAfterDiscount = (price, discount) => {

@@ -7,6 +7,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  ActivityIndicator,
+  Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -19,13 +21,17 @@ const FavoritesScreen = () => {
   const [favoritesKits, setFavoritesKits] = useState([]);
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [selectionMode, setSelectionMode] = useState(false);
+  const [loading, setLoading] = useState(false);
   const swipeableRefs = useRef({});
   const [openSwipeId, setOpenSwipeId] = useState(null);
-
   const navigation = useNavigation();
 
+  // New state variables for the confirmation modal
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [deleteType, setDeleteType] = useState(null); // 'all' or 'selected'
+
   useEffect(() => {
-    fetchData();
+    loadFavorites();
   }, []);
 
   useFocusEffect(
@@ -34,38 +40,35 @@ const FavoritesScreen = () => {
     }, [])
   );
 
-  // Fetch kits based on favorite IDs
-  const fetchData = async () => {
+  const loadFavorites = async () => {
     try {
+      setLoading(true);
       const storedFavorites = await AsyncStorage.getItem('favoriteskits');
       if (storedFavorites) {
         const favoritesArray = JSON.parse(storedFavorites);
         setFavoritesKits(favoritesArray);
-
-        const responses = await Promise.all(
-          favoritesArray.map(async (id) => {
-            const response = await getKitByID(id);
-            return response[0]; // Assuming response is an array and we're interested in the first element
-          })
-        );
-
-        // Filter out null responses
-        const validKits = responses.filter(kit => kit !== null);
-        setKits(validKits);
+        await fetchKits(favoritesArray);
       }
     } catch (error) {
       console.error('Error loading favoriteskits: ', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const loadFavorites = async () => {
+  const fetchKits = async (favoritesArray) => {
     try {
-      const storedFavorites = await AsyncStorage.getItem('favoriteskits');
-      if (storedFavorites) {
-        setFavoritesKits(JSON.parse(storedFavorites));
-      }
+      const responses = await Promise.all(
+        favoritesArray.map(async (_id) => {
+          const response = await getKitByID(_id);
+          return response && Array.isArray(response) ? response[0] : null;
+        })
+      );
+
+      const validKits = responses.filter(kit => kit && kit._id);
+      setKits(validKits);
     } catch (error) {
-      console.error('Error loading favoriteskits: ', error);
+      console.error('Error fetching kits: ', error);
     }
   };
 
@@ -73,12 +76,15 @@ const FavoritesScreen = () => {
     setSelectionMode(true);
   };
 
-  const toggleSelection = (id) => {
+  const toggleSelection = (_id) => {
     const newSelectedItems = new Set(selectedItems);
-    if (newSelectedItems.has(id)) {
-      newSelectedItems.delete(id);
+    if (newSelectedItems.has(_id)) {
+      newSelectedItems.delete(_id);
+      if (newSelectedItems.size === 0) {
+        setSelectionMode(false);
+      }
     } else {
-      newSelectedItems.add(id);
+      newSelectedItems.add(_id);
     }
     setSelectedItems(newSelectedItems);
   };
@@ -97,68 +103,100 @@ const FavoritesScreen = () => {
     setSelectedItems(new Set());
   };
 
-  const deleteSelectedFavorites = async () => {
-    const updatedFavorites = favoritesKits.filter(id => !selectedItems.has(id));
-    await AsyncStorage.setItem('favoriteskits', JSON.stringify(updatedFavorites));
-    setFavoritesKits(updatedFavorites);
-    setKits(kits.filter(kit => updatedFavorites.includes(kit.id)));
-    setSelectedItems(new Set());
-    setSelectionMode(false);
+  const deleteSelectedFavorites = () => {
+    setDeleteType('selected');
+    setConfirmModalVisible(true);
   };
 
-  const renderRightActions = (id) => (
-    <TouchableOpacity style={styles.deleteButton} onPress={() => deleteFavorite(id)}>
+  const deleteAllFavorites = () => {
+    setDeleteType('all');
+    setConfirmModalVisible(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteType === 'selected') {
+      const updatedFavorites = favoritesKits.filter(_id => !selectedItems.has(_id));
+      try {
+        await AsyncStorage.setItem('favoriteskits', JSON.stringify(updatedFavorites));
+        setFavoritesKits(updatedFavorites);
+        setKits(kits.filter(kit => updatedFavorites.includes(kit._id)));
+        setSelectedItems(new Set());
+        setSelectionMode(false);
+      } catch (error) {
+        console.error('Error deleting selected favorites: ', error);
+      }
+    } else if (deleteType === 'all') {
+      try {
+        await AsyncStorage.removeItem('favoriteskits');
+        setFavoritesKits([]);
+        setKits([]);
+      } catch (error) {
+        console.error('Error deleting all favorites: ', error);
+      }
+    }
+    setConfirmModalVisible(false); // Close the modal after deletion
+  };
+
+  const cancelDelete = () => {
+    setConfirmModalVisible(false); // Close the modal without action
+  };
+
+  const renderRightActions = (_id) => (
+    <TouchableOpacity style={styles.deleteButton} onPress={() => deleteFavorite(_id)}>
       <Icon name="trash" size={24} color="white" />
     </TouchableOpacity>
   );
 
-  const deleteFavorite = async (id) => {
-    const updatedFavorites = favoritesKits.filter(favId => favId !== id);
+  const deleteFavorite = async (_id) => {
+    const updatedFavorites = favoritesKits.filter(favId => favId !== _id);
     await AsyncStorage.setItem('favoriteskits', JSON.stringify(updatedFavorites));
     setFavoritesKits(updatedFavorites);
-    setKits(kits.filter(kit => kit.id !== id));
+    setKits(kits.filter(kit => kit._id !== _id));
   };
 
-  // Render each favorite item
   const renderItem = ({ item }) => (
     <Swipeable
       ref={(ref) => {
         if (ref) {
-          swipeableRefs.current[item.id] = ref;
+          swipeableRefs.current[item._id] = ref;
         }
       }}
-      renderRightActions={() => renderRightActions(item.id)}
+      renderRightActions={() => renderRightActions(item._id)}
       overshootRight={false}
       onSwipeableWillOpen={() => {
-        if (openSwipeId && openSwipeId !== item.id && swipeableRefs.current[openSwipeId]) {
+        if (openSwipeId && openSwipeId !== item._id && swipeableRefs.current[openSwipeId]) {
           swipeableRefs.current[openSwipeId].close();
         }
-        setOpenSwipeId(item.id);
+        setOpenSwipeId(item._id);
       }}
       onSwipeableClose={() => {
-        if (openSwipeId === item.id) {
+        if (openSwipeId === item._id) {
           setOpenSwipeId(null);
         }
       }}
     >
       <TouchableOpacity
-        onLongPress={longPressToSelect} // Activate selection on long press
+        onLongPress={() => {
+          toggleSelection(item._id);
+          if (!selectedItems.has(item._id)) {
+            setSelectionMode(true);
+          }
+        }}
         onPress={() => {
           if (selectionMode) {
-            toggleSelection(item.id);
+            toggleSelection(item._id);
           } else {
-            // navigation.navigate('Detailarttool', { arttoolId: item.id, fromFavorites: true });
             navigation.navigate('Detailkits', { kitId: item._id, fromFavorites: true });
           }
         }}
         style={styles.card}
       >
         {selectionMode && (
-          <TouchableOpacity onPress={() => toggleSelection(item.id)} style={styles.checkboxContainer}>
+          <TouchableOpacity onPress={() => toggleSelection(item._id)} style={styles.checkboxContainer}>
             <Icon
-              name={selectedItems.has(item.id) ? 'check-square' : 'square-o'}
+              name={selectedItems.has(item._id) ? 'check-square' : 'square-o'}
               size={24}
-              color={selectedItems.has(item.id) ? '#FF6347' : '#777'}
+              color={selectedItems.has(item._id) ? '#FF6347' : '#777'}
             />
           </TouchableOpacity>
         )}
@@ -166,8 +204,7 @@ const FavoritesScreen = () => {
         <View style={styles.infoContainer}>
           <Text style={styles.brand}>{item.category_name}</Text>
           <Text style={styles.title}>{item.name}</Text>
-          <Text style={styles.title}>{item.status}</Text>
-          {/* <Text style={styles.title}>{item.description}</Text> */}
+          <Text style={styles.status}>{item.status}</Text>
           <Text style={styles.price}>${item.price.toFixed(2)}</Text>
         </View>
       </TouchableOpacity>
@@ -176,46 +213,81 @@ const FavoritesScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header Section */}
       <View style={styles.header}>
-        <View style={styles.headerButtonsContainer}>
-          {selectionMode && (
-            <>
-              <TouchableOpacity style={styles.headerButton} onPress={selectAll}>
-                <Text style={styles.headerButtonText}>
-                  {selectedItems.size === favoritesKits.length ? 'Cancel' : 'Select All'}
-                </Text>
-              </TouchableOpacity>
-              {selectedItems.size > 0 && (
-                <TouchableOpacity onPress={cancelSelection} style={styles.exitButton}>
-                  <Text style={styles.headerButtonText}>Exit Selection</Text>
-                </TouchableOpacity>
-              )}
-              {selectedItems.size > 0 && (
-                <TouchableOpacity style={styles.headerButton} onPress={deleteSelectedFavorites}>
-                  <Text style={styles.headerButtonText}>Delete Selected</Text>
-                </TouchableOpacity>
-              )}
-            </>
-          )}
-        </View>
+      <View style={styles.headerButtonsContainer}>
+  {selectionMode && (
+    <>
+      <TouchableOpacity style={styles.headerButton} onPress={selectAll}>
+        <Text style={styles.headerButtonText}>
+          {selectedItems.size === favoritesKits.length ? 'Cancel' : 'Select All'}
+        </Text>
+      </TouchableOpacity>
+      {selectedItems.size > 0 && (
+        <TouchableOpacity onPress={cancelSelection} style={styles.exitButton}>
+          <Text style={styles.headerButtonText}>Exit Selection</Text>
+        </TouchableOpacity>
+      )}
+      {selectedItems.size > 0 && (
+        <TouchableOpacity style={styles.headerButton} onPress={deleteSelectedFavorites}>
+          <Text style={styles.headerButtonText}>Delete Selected</Text>
+        </TouchableOpacity>
+      )}
+    </>
+  )}
+  {!selectionMode && favoritesKits.length > 0 && (
+    <TouchableOpacity style={styles.deleteAllButton} onPress={deleteAllFavorites}>
+      <Text style={styles.headerButtonText}>Delete All</Text>
+    </TouchableOpacity>
+  )}
+</View>
+
       </View>
 
-      {/* Favorites List */}
-      {kits.length > 0 ? (
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6347" />
+          <Text style={styles.loadingText}>Loading favorites...</Text>
+        </View>
+      ) : kits.length > 0 ? (
         <FlatList
           data={kits}
-          keyExtractor={(item) => item.id} // Ensure you have the correct key
+          keyExtractor={(item) => item._id.toString()}
           renderItem={renderItem}
           contentContainerStyle={{ paddingBottom: 100 }}
         />
       ) : (
-        // Empty State
         <View style={styles.noFavoritesContainer}>
           <Icon name="frown-o" size={50} color="#888" />
           <Text style={styles.noFavoritesText}>No favorites kits added yet.</Text>
         </View>
       )}
+
+      {/* Confirmation Modal */}
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={confirmModalVisible}
+        onRequestClose={cancelDelete}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {deleteType === 'all' ? 'Confirm Delete All' : 'Confirm Delete Selected'}
+            </Text>
+            <Text style={styles.modalMessage}>
+              Are you sure you want to {deleteType === 'all' ? 'delete all favorites?' : 'delete selected favorites?'}
+            </Text>
+            <View style={styles.modalButtonsContainer}>
+              <TouchableOpacity style={styles.modalButton} onPress={confirmDelete}>
+                <Text style={styles.modalButtonText}>Yes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalButton} onPress={cancelDelete}>
+                <Text style={styles.modalButtonText}>No</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -241,6 +313,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   headerButton: {
+    padding: 10,
+    backgroundColor: '#FF6347',
+    borderRadius: 5,
+    marginHorizontal: 5,
+    flex: 1,
+    alignItems: 'center',
+  },
+  deleteAllButton: {
     padding: 10,
     backgroundColor: '#FF6347',
     borderRadius: 5,
@@ -289,6 +369,11 @@ const styles = StyleSheet.create({
     color: '#777',
     marginVertical: 2,
   },
+  status: {
+    fontSize: 16,
+    color: '#777',
+    marginVertical: 2,
+  },
   price: {
     fontSize: 18,
     color: '#FF6347',
@@ -314,12 +399,63 @@ const styles = StyleSheet.create({
     marginTop: 20,
     color: '#888',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#888',
+  },
   exitButton: {
     marginLeft: 'auto',
     backgroundColor: '#FF6347',
     borderRadius: 8,
     paddingVertical: 4,
     paddingHorizontal: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalMessage: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    backgroundColor: '#FF6347',
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
 

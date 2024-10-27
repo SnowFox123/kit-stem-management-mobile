@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Keyboard } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
-import { getKit, getLabs } from '../service/UserServices';
+import { getLabs } from '../service/UserServices';
 
 const LabsScreen = () => {
     const [data, setData] = useState([]);
@@ -14,18 +14,17 @@ const LabsScreen = () => {
     const [favorites, setFavorites] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-    const searchInputRef = useRef(null);
     const navigation = useNavigation();
 
     useEffect(() => {
         fetchData();
-        loadFavorites(); // Load favorites on component mount
+        loadFavorites();
     }, []);
 
     useFocusEffect(
         useCallback(() => {
             fetchData();
-            loadFavorites(); // Load favorites when focused
+            loadFavorites();
         }, [])
     );
 
@@ -41,22 +40,14 @@ const LabsScreen = () => {
         try {
             const payload = {
                 searchCondition: { keyword: "", category_id: "", status: "", is_deleted: false },
-                pageInfo: { pageNum: 1, pageSize: 100 }  // Adjusted page size for new data structure
+                pageInfo: { pageNum: 1, pageSize: 100 }
             };
             const response = await getLabs(payload);
-
             const validData = response.data.pageData.filter(item => !item.is_deleted);
             setData(validData);
             setFilteredLabs(validData);
         } catch (error) {
             console.error("Error fetching data: ", error);
-            Toast.show({
-                text1: 'Error fetching data',
-                position: 'top',
-                type: 'error',
-                visibilityTime: 2000,
-                autoHide: true,
-            });
         } finally {
             setIsLoading(false);
         }
@@ -95,13 +86,11 @@ const LabsScreen = () => {
             : [...favorites, id];
         setFavorites(updatedFavorites);
         await AsyncStorage.setItem('favoriteslabs', JSON.stringify(updatedFavorites));
-        Toast.show({
-            text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
-            position: 'top',
-            type: 'success',
-            visibilityTime: 2000,
-            autoHide: true,
-        });
+    };
+
+    const filterBySearch = () => {
+        const lowercaseQuery = searchQuery.toLowerCase();
+        setFilteredLabs(data.filter(item => item.name.toLowerCase().includes(lowercaseQuery) && !item.is_deleted));
     };
 
     const renderItem = ({ item }) => {
@@ -155,39 +144,25 @@ const LabsScreen = () => {
         );
     };
 
-
-    const handleSearch = () => {
-        const query = searchQuery.toLowerCase();
-        if (query) {
-            setFilteredLabs(data.filter(item => item.name.toLowerCase().includes(query) && !item.is_deleted));
-        } else {
-            setFilteredLabs(data);
-        }
-    };
-
     const clearSearch = () => {
         setSearchQuery('');
         setFilteredLabs(data);
-    };
-
-    const handleSearchChange = (query) => {
-        setSearchQuery(query);
     };
 
     return (
         <View style={styles.container}>
             <View style={styles.searchContainer}>
                 <TextInput
-                    ref={searchInputRef}
                     style={styles.searchInput}
                     placeholder="Search by labs name..."
                     value={searchQuery}
-                    onChangeText={handleSearchChange}
-                    onSubmitEditing={handleSearch}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={() => {
+                        filterBySearch();
+                        Keyboard.dismiss();
+                    }}
+                    returnKeyType="search"
                 />
-                <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-                    <Text style={styles.searchButtonText}>Search</Text>
-                </TouchableOpacity>
                 {searchQuery ? (
                     <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
                         <Icon name="times-circle" size={20} color="grey" />
@@ -207,7 +182,7 @@ const LabsScreen = () => {
                         onPress={() => filterByCategory(category.name)}
                     >
                         <Text style={[styles.categoryText, selectedCategory === category.name && styles.categoryTextActive]}>
-                            {category.name} ({category.count})  {/* Make sure this text is wrapped in Text component */}
+                            {category.name} ({category.count})
                         </Text>
                     </TouchableOpacity>
                 ))}
@@ -238,43 +213,21 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        position: 'relative',
         marginBottom: 10,
     },
     searchInput: {
-        flex: 1,
         height: 40,
         borderColor: '#ddd',
         borderWidth: 1,
         borderRadius: 5,
         paddingHorizontal: 10,
-    },
-    searchButton: {
-        paddingHorizontal: 10,
-        backgroundColor: 'rgb(0, 110, 173)',
-        borderRadius: 5,
-        marginLeft: 5,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    categorySoldContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: 5,
-    },
-    searchButtonText: {
-        color: '#fff',
-        fontSize: 14,
+        paddingRight: 40, // Add padding for the clear button
     },
     clearButton: {
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        marginLeft: 10,
-        backgroundColor: 'grey',
-        borderRadius: 20,
+        position: 'absolute',
+        right: 10,
+        top: '25%',
     },
     categoryContainer: {
         flexDirection: 'row',

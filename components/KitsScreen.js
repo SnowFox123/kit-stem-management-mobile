@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView } from 'react-native';
-import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -20,13 +19,13 @@ const KitsScreen = () => {
 
     useEffect(() => {
         fetchData();
-        loadFavorites(); // Load favorites on component mount
+        loadFavorites();
     }, []);
 
     useFocusEffect(
         useCallback(() => {
             fetchData();
-            loadFavorites(); // Load favorites when focused
+            loadFavorites();
         }, [])
     );
 
@@ -45,7 +44,7 @@ const KitsScreen = () => {
                 pageInfo: { pageNum: 1, pageSize: 10 }
             };
             const response = await getKit(payload);
-            
+
             const validData = response.data.pageData.filter(item => !item.is_deleted);
             setData(validData);
             setFilteredArttools(validData);
@@ -84,8 +83,8 @@ const KitsScreen = () => {
 
     const filterByCategory = (category) => {
         setSelectedCategory(category);
-        setFilteredArttools(category === 'All' 
-            ? data 
+        setFilteredArttools(category === 'All'
+            ? data
             : data.filter(item => item.category_name === category && !item.is_deleted)
         );
     };
@@ -96,29 +95,22 @@ const KitsScreen = () => {
             : [...favorites, id];
         setFavorites(updatedFavorites);
         await AsyncStorage.setItem('favoriteskits', JSON.stringify(updatedFavorites));
-        Toast.show({
-            text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
-            position: 'top',
-            type: 'success',
-            visibilityTime: 2000,
-            autoHide: true,
-        });
     };
 
     const renderItem = ({ item }) => {
         const discountedPrice = item.discount
             ? (item.price * (1 - item.discount)).toFixed(2)
             : item.price.toFixed(2);
-    
+
         return (
             <TouchableOpacity
                 onPress={() => navigation.navigate('Detailkits', { kitId: item._id })}
                 style={styles.card}
             >
-                 <Image
-                    source={{ uri: item.image_url }}  
-                    style={styles.cardImage}           
-                    resizeMode="contain"               
+                <Image
+                    source={{ uri: item.image_url }}
+                    style={styles.cardImage}
+                    resizeMode="contain"
                 />
                 <TouchableOpacity style={styles.favoriteButton} onPress={() => toggleFavorite(item._id)}>
                     <Icon
@@ -128,19 +120,19 @@ const KitsScreen = () => {
                     />
                 </TouchableOpacity>
                 <Text style={styles.artName} numberOfLines={2}>{item.name}</Text>
-    
+
                 <View style={styles.ratingContainer}>
                     <Icon name="star" size={14} color="#FFD700" />
                     <Text style={styles.averageRating}>sao</Text>
                 </View>
-    
+
                 <View style={styles.priceGroup}>
                     <Text style={styles.price}>${discountedPrice}</Text>
                     {item.discount > 0 && (
                         <Text style={styles.oldPrice}>${item.price.toFixed(2)}</Text>
                     )}
                 </View>
-    
+
                 <View style={styles.categorySoldContainer}>
                     <Text style={styles.brand}>{item.category_name}</Text>
                     <Text style={styles.soldText}>Sold 1.1k</Text>
@@ -185,10 +177,8 @@ const KitsScreen = () => {
                     value={searchQuery}
                     onChangeText={handleSearchChange}
                     onSubmitEditing={handleSearch}
+                    returnKeyType="search"
                 />
-                <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-                    <Text style={styles.searchButtonText}>Search</Text>
-                </TouchableOpacity>
                 {searchQuery ? (
                     <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
                         <Icon name="times-circle" size={20} color="grey" />
@@ -239,43 +229,21 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        position: 'relative',
         marginBottom: 10,
     },
     searchInput: {
-        flex: 1,
         height: 40,
         borderColor: '#ddd',
         borderWidth: 1,
         borderRadius: 5,
         paddingHorizontal: 10,
-    },
-    searchButton: {
-        paddingHorizontal: 10,
-        backgroundColor: 'rgb(0, 110, 173)',
-        borderRadius: 5,
-        marginLeft: 5,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    categorySoldContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: 5,
-    },
-    searchButtonText: {
-        color: '#fff',
-        fontSize: 14,
+        paddingRight: 40, // Add padding for the clear button
     },
     clearButton: {
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        marginLeft: 10,
-        backgroundColor: 'grey',
-        borderRadius: 20,
+        position: 'absolute',
+        right: 10,
+        top: '25%',
     },
     categoryContainer: {
         flexDirection: 'row',
