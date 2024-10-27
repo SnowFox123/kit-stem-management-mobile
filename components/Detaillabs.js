@@ -6,7 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import { getKitByID } from '../service/UserServices';
 
-const Detailkits = ({ route }) => {
+const Detaillabs = ({ route }) => {
     const { kitId } = route.params;
     const [kit, setKit] = useState(null);
     const [favorites, setFavorites] = useState([]);
@@ -37,7 +37,7 @@ const Detailkits = ({ route }) => {
 
     const loadFavorites = async () => {
         try {
-            const storedFavorites = await AsyncStorage.getItem('favoriteskits');
+            const storedFavorites = await AsyncStorage.getItem('favoriteslabs');
             if (storedFavorites !== null) {
                 setFavorites(JSON.parse(storedFavorites));
             }
@@ -52,7 +52,7 @@ const Detailkits = ({ route }) => {
             : [...favorites, id];
 
         setFavorites(updatedFavorites);
-        await AsyncStorage.setItem('favoriteskits', JSON.stringify(updatedFavorites));
+        await AsyncStorage.setItem('favoriteslabs', JSON.stringify(updatedFavorites));
 
         Toast.show({
             text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
@@ -257,4 +257,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Detailkits;
+export default Detaillabs;

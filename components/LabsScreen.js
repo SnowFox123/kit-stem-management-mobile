@@ -1,32 +1,34 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView } from 'react-native';
-import axios from 'axios';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
-import { getKit } from '../service/UserServices';
+import { getLabs } from '../service/UserServices';
+import { WebView } from 'react-native-webview';
 
 const LabsScreen = () => {
     const [data, setData] = useState([]);
-    const [filteredArttools, setFilteredArttools] = useState([]);
+    const [filteredLabs, setFilteredLabs] = useState([]);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [favorites, setFavorites] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [videoUrl, setVideoUrl] = useState(null);
+    const [isModalVisible, setModalVisible] = useState(false);
     const searchInputRef = useRef(null);
     const navigation = useNavigation();
 
     useEffect(() => {
         fetchData();
-        loadFavorites(); // Load favorites on component mount
+        loadFavorites();
     }, []);
 
     useFocusEffect(
         useCallback(() => {
             fetchData();
-            loadFavorites(); // Load favorites when focused
+            loadFavorites();
         }, [])
     );
 
@@ -42,13 +44,12 @@ const LabsScreen = () => {
         try {
             const payload = {
                 searchCondition: { keyword: "", category_id: "", status: "", is_deleted: false },
-                pageInfo: { pageNum: 1, pageSize: 10 }
+                pageInfo: { pageNum: 1, pageSize: 100 }
             };
-            const response = await getKit(payload);
-            
+            const response = await getLabs(payload);
             const validData = response.data.pageData.filter(item => !item.is_deleted);
             setData(validData);
-            setFilteredArttools(validData);
+            setFilteredLabs(validData);
         } catch (error) {
             console.error("Error fetching data: ", error);
             Toast.show({
@@ -84,8 +85,8 @@ const LabsScreen = () => {
 
     const filterByCategory = (category) => {
         setSelectedCategory(category);
-        setFilteredArttools(category === 'All' 
-            ? data 
+        setFilteredLabs(category === 'All'
+            ? data
             : data.filter(item => item.category_name === category && !item.is_deleted)
         );
     };
@@ -109,16 +110,19 @@ const LabsScreen = () => {
         const discountedPrice = item.discount
             ? (item.price * (1 - item.discount)).toFixed(2)
             : item.price.toFixed(2);
-    
+
         return (
             <TouchableOpacity
-                onPress={() => navigation.navigate('Detailkits', { kitId: item._id })}
+                onPress={() => {
+                    setVideoUrl(item.lab_url);
+                    setModalVisible(true);
+                }}
                 style={styles.card}
             >
-                 <Image
-                    source={{ uri: item.image_url }}  
-                    style={styles.cardImage}           
-                    resizeMode="contain"               
+                <Image
+                    source={{ uri: item.lab_url }} // Assuming the lab URL is an image
+                    style={styles.cardImage}
+                    resizeMode="contain"
                 />
                 <TouchableOpacity style={styles.favoriteButton} onPress={() => toggleFavorite(item._id)}>
                     <Icon
@@ -128,30 +132,29 @@ const LabsScreen = () => {
                     />
                 </TouchableOpacity>
                 <Text style={styles.artName} numberOfLines={2}>{item.name}</Text>
-    
+                <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
                 <View style={styles.ratingContainer}>
                     <Icon name="star" size={14} color="#FFD700" />
-                    <Text style={styles.averageRating}>sao</Text>
+                    <Text style={styles.averageRating}>Rating: {item.rating || 'N/A'}</Text>
                 </View>
-    
                 <View style={styles.priceGroup}>
                     <Text style={styles.price}>${discountedPrice}</Text>
                     {item.discount > 0 && (
                         <Text style={styles.oldPrice}>${item.price.toFixed(2)}</Text>
                     )}
                 </View>
-    
                 <View style={styles.categorySoldContainer}>
                     <Text style={styles.brand}>{item.category_name}</Text>
-                    <Text style={styles.soldText}>Sold 1.1k</Text>
+                    <Text style={styles.soldText}>Support: {item.max_support_count || ''}</Text>
                 </View>
-
                 <View style={styles.discountPosition}>
-                    {item.discount > 0 ? (
+                    {item.discount > 0 && (
                         <View style={styles.discountBadge}>
-                            <Text style={{ color: 'rgb(0, 110, 173)', fontWeight: '400' }}>{formatDiscount(item.discount)}</Text>
+                            <Text style={{ color: 'rgb(0, 110, 173)', fontWeight: '400' }}>
+                                {formatDiscount(item.discount)}
+                            </Text>
                         </View>
-                    ) : null}
+                    )}
                 </View>
             </TouchableOpacity>
         );
@@ -160,15 +163,15 @@ const LabsScreen = () => {
     const handleSearch = () => {
         const query = searchQuery.toLowerCase();
         if (query) {
-            setFilteredArttools(data.filter(item => item.name.toLowerCase().includes(query) && !item.is_deleted));
+            setFilteredLabs(data.filter(item => item.name.toLowerCase().includes(query) && !item.is_deleted));
         } else {
-            setFilteredArttools(data);
+            setFilteredLabs(data);
         }
     };
 
     const clearSearch = () => {
         setSearchQuery('');
-        setFilteredArttools(data);
+        setFilteredLabs(data);
     };
 
     const handleSearchChange = (query) => {
@@ -181,7 +184,7 @@ const LabsScreen = () => {
                 <TextInput
                     ref={searchInputRef}
                     style={styles.searchInput}
-                    placeholder="Search by kits name..."
+                    placeholder="Search by lab name..."
                     value={searchQuery}
                     onChangeText={handleSearchChange}
                     onSubmitEditing={handleSearch}
@@ -217,160 +220,92 @@ const LabsScreen = () => {
             {isLoading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="rgb(0, 110, 173)" />
-                    <Text style={styles.loadingText}>Fetching Art Tool Details...</Text>
+                    <Text style={styles.loadingText}>Fetching Lab Details...</Text>
                 </View>
             ) : (
                 <FlatList
-                    data={filteredArttools}
+                    data={filteredLabs}
                     keyExtractor={(item) => item._id}
                     renderItem={renderItem}
                     numColumns={2}
                     contentContainerStyle={{ paddingBottom: 100 }}
                 />
             )}
+
+            {/* Modal for Video Playback */}
+            <Modal
+                visible={isModalVisible}
+                onRequestClose={() => setModalVisible(false)}
+                transparent={true}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                            <Icon name="times" size={30} color="black" />
+                        </TouchableOpacity>
+                        {videoUrl && (
+                            <WebView
+                                source={{ uri: videoUrl }}
+                                style={{ flex: 1 }}
+                                javaScriptEnabled={true}
+                                domStorageEnabled={true}
+                            />
+                        )}
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
 
+// Styles for modal and other components
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 10,
-        backgroundColor: '#fff',
+        padding: 16,
+        backgroundColor: '#ffffff',
     },
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 16,
     },
     searchInput: {
         flex: 1,
-        height: 40,
-        borderColor: '#ddd',
         borderWidth: 1,
+        borderColor: '#ccc',
         borderRadius: 5,
-        paddingHorizontal: 10,
+        padding: 10,
+        marginRight: 10,
     },
     searchButton: {
-        paddingHorizontal: 10,
         backgroundColor: 'rgb(0, 110, 173)',
+        padding: 10,
         borderRadius: 5,
-        marginLeft: 5,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    categorySoldContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: 5,
     },
     searchButtonText: {
         color: '#fff',
-        fontSize: 14,
     },
     clearButton: {
-        paddingHorizontal: 10,
-        paddingVertical: 5,
         marginLeft: 10,
-        backgroundColor: 'grey',
-        borderRadius: 20,
     },
     categoryContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginBottom: 10,
-        height: 40,
+        paddingVertical: 10,
     },
     categoryButton: {
-        padding: 7.5,
-        borderRadius: 5,
+        marginRight: 10,
+        padding: 10,
         backgroundColor: '#f0f0f0',
-        marginHorizontal: 5,
-        alignItems: 'center',
-        justifyContent: 'center',
+        borderRadius: 5,
     },
     selectedCategoryButton: {
         backgroundColor: 'rgb(0, 110, 173)',
     },
     categoryText: {
-        fontSize: 14,
         color: '#000',
     },
     categoryTextActive: {
         color: '#fff',
-    },
-    card: {
-        width: '48%',
-        marginBottom: 10,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 10,
-        padding: 10,
-        position: 'relative',
-        overflow: 'hidden',
-    },
-    cardImage: {
-        width: '100%',
-        height: 150,
-        borderRadius: 10,
-    },
-    favoriteButton: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        zIndex: 1,
-    },
-    artName: {
-        fontWeight: 'bold',
-        marginTop: 5,
-    },
-    ratingContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 5,
-    },
-    averageRating: {
-        marginLeft: 5,
-    },
-    priceGroup: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 5,
-    },
-    oldPrice: {
-        textDecorationLine: 'line-through',
-        color: 'grey',
-    },
-    price: {
-        fontWeight: 'bold',
-        fontSize: 16,
-        color: 'rgb(0, 110, 173)',
-        marginRight: 5,
-    },
-    brand: {
-        marginTop: 5,
-        fontStyle: 'italic',
-    },
-    soldText: {
-        marginTop: 5,
-        color: 'grey',
-    },
-    discountPosition: {
-        position: 'absolute',
-        top: 1,
-        left: 1
-    },
-    discountBadge: {
-        backgroundColor: '#FFD700',
-        paddingHorizontal: 10,
-        paddingVertical: 1,
-        alignSelf: 'center',
-    },
-    discountText: {
-        color: '#fff',
-        fontSize: 12,
     },
     loadingContainer: {
         flex: 1,
@@ -379,7 +314,100 @@ const styles = StyleSheet.create({
     },
     loadingText: {
         marginTop: 10,
+    },
+    card: {
+        flex: 1,
+        margin: 10,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 5,
+        overflow: 'hidden',
+        backgroundColor: '#fff',
+        position: 'relative',
+    },
+    cardImage: {
+        width: '100%',
+        height: 120,
+    },
+    favoriteButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+    },
+    artName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginVertical: 5,
+    },
+    description: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 5,
+    },
+    ratingContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    averageRating: {
+        marginLeft: 5,
+    },
+    priceGroup: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 5,
+    },
+    price: {
+        fontSize: 16,
+        fontWeight: 'bold',
         color: 'rgb(0, 110, 173)',
+    },
+    oldPrice: {
+        fontSize: 14,
+        textDecorationLine: 'line-through',
+        marginLeft: 10,
+        color: '#999',
+    },
+    categorySoldContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginVertical: 5,
+    },
+    brand: {
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    soldText: {
+        fontSize: 14,
+        color: '#666',
+    },
+    discountPosition: {
+        position: 'absolute',
+        top: 10,
+        left: 10,
+    },
+    discountBadge: {
+        backgroundColor: '#f0c040',
+        borderRadius: 5,
+        padding: 5,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    },
+    modalContent: {
+        width: '90%',
+        height: '80%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        overflow: 'hidden',
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        zIndex: 1,
     },
 });
 

@@ -217,7 +217,7 @@ const KitsScreen = () => {
             {isLoading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="rgb(0, 110, 173)" />
-                    <Text style={styles.loadingText}>Fetching Art Tool Details...</Text>
+                    <Text style={styles.loadingText}>Fetching Kits Details...</Text>
                 </View>
             ) : (
                 <FlatList
