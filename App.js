@@ -10,35 +10,21 @@ import FavoritesScreen from "./components/FavoritesScreen";
 import Detailkits from "./components/Detailkits";
 import Profile from "./components/Profile";
 import AllComments from "./components/AllComments";
-// import HomeScreen2 from "./components/HomeScreen2";
 import HomeScreen from "./components/HomeScreen";
+import KitsScreen from "./components/KitsScreen";
+import LabsScreen from "./components/LabsScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Home stack navigator
 const HomeStack = () => (
   <Stack.Navigator>
     <Stack.Screen
-      name="HomeStackScreen"
+      name="HomeScreen"
       component={HomeScreen}
       options={{
-        title: "Kits Collection",
-        headerTitleStyle: styles.headerTitle,
-      }}
-    />
-    <Stack.Screen
-      name="Kits"
-      component={HomeScreen}
-      options={{
-        title: "Kits Collection",
-        headerTitleStyle: styles.headerTitle,
-      }}
-    />
-    <Stack.Screen
-      name="Labs"
-      component={HomeScreen}
-      options={{
-        title: "Labs Collection",
+        title: "Home",
         headerTitleStyle: styles.headerTitle,
       }}
     />
@@ -69,21 +55,22 @@ const HomeStack = () => (
   </Stack.Navigator>
 );
 
-const FavoritesStack = () => (
+// Kits stack navigator
+const KitsStack = () => (
   <Stack.Navigator>
     <Stack.Screen
-      name="FavoritesStackScreen"
-      component={FavoritesScreen}
+      name="KitsScreen"
+      component={KitsScreen}
       options={{
-        title: "Favorite Arttools",
+        title: "Kits Collection",
         headerTitleStyle: styles.headerTitle,
       }}
     />
     <Stack.Screen
-      name="Detailarttool"
-      component={Detailarttool}
+      name="Detailkits"
+      component={Detailkits}
       options={{
-        title: "Details",
+        title: "Kit Details",
         headerTitleStyle: styles.headerTitle,
       }}
     />
@@ -98,6 +85,67 @@ const FavoritesStack = () => (
   </Stack.Navigator>
 );
 
+// Labs stack navigator
+const LabsStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="LabsScreen"
+      component={LabsScreen}
+      options={{
+        title: "Labs Collection",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="Detailkits"
+      component={Detailkits}
+      options={{
+        title: "Lab Details",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="Profile"
+      component={Profile}
+      options={{
+        title: "Profile",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+  </Stack.Navigator>
+);
+
+// Favorites stack navigator
+const FavoritesStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="FavoritesScreen"
+      component={FavoritesScreen}
+      options={{
+        title: "Favorite Arttools",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="Detailkits"
+      component={Detailkits}
+      options={{
+        title: "Detail kits",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="Profile"
+      component={Profile}
+      options={{
+        title: "Profile",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+  </Stack.Navigator>
+);
+
+// Main app component with tab navigator
 const App = () => {
   return (
     <NavigationContainer independent>
@@ -131,12 +179,12 @@ const App = () => {
         />
         <Tab.Screen
           name="Kits"
-          component={HomeStack}
+          component={KitsStack} // Use KitsStack here
           options={{ title: "Kits", headerShown: false, unmountOnBlur: true }}
         />
         <Tab.Screen
           name="Labs"
-          component={HomeStack}
+          component={LabsStack} // Use LabsStack here
           options={{ title: "Labs", headerShown: false, unmountOnBlur: true }}
         />
         <Tab.Screen
@@ -157,6 +205,7 @@ const App = () => {
   );
 };
 
+// Styles for header title
 const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
@@ -165,14 +214,3 @@ const styles = StyleSheet.create({
 });
 
 export default App;
-
-//npm install @react-navigation/native
-
-//npm install @react-navigation/stack @react-navigation/bottom-tabs
-//npm install axios
-//npm install @react-native-async-storage/async-storage
-//yarn add react-native-reanimated
-
-
-
-//npm install react-native-gesture-handler

@@ -14,12 +14,16 @@ const Detailkits = ({ route }) => {
     useEffect(() => {
         fetchKitDetails();
         loadFavorites();
-    }, []);
+    }, [kitId]); // Thêm `kitId` để đảm bảo `fetchKitDetails` chạy lại khi kitId thay đổi
+
 
     const fetchKitDetails = async () => {
         try {
             const response = await getKitByID(kitId);
-            setKit(response[0]);
+            console.log('API Response:', response); // Kiểm tra xem response có dữ liệu không
+            if (response && response.length > 0) {
+                setKit(response[0]);
+            }
         } catch (error) {
             console.error("Error fetching kit details: ", error);
             Toast.show({
@@ -32,6 +36,7 @@ const Detailkits = ({ route }) => {
             });
         }
     };
+
 
     const loadFavorites = async () => {
         try {
@@ -94,7 +99,7 @@ const Detailkits = ({ route }) => {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <View style={styles.container}>
                 <View style={styles.imageContainer}>
-                    <Image source={{ uri: kit.image_url }} style={styles.image} />
+                    <Image source={{ uri: kit.image_url }} style={styles.image} resizeMode="contain" />
                     <TouchableOpacity onPress={() => toggleFavorite(kit._id)} style={styles.favoriteIcon}>
                         <Icon name={favorites.includes(kit._id) ? 'heart' : 'heart-o'} size={24} color="red" />
                     </TouchableOpacity>
