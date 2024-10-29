@@ -19,8 +19,9 @@ const Detailkits = ({ route }) => {
     const fetchKitDetails = async () => {
         try {
             const response = await getKitByID(kitId);
+            console.log("🚀 ~ fetchKitDetails ~ response:", response.data)
             if (response) {
-                setKit(response[0]);
+                setKit(response.data);
             }
         } catch (error) {
             console.error("Error fetching kit details: ", error);
@@ -76,7 +77,8 @@ const Detailkits = ({ route }) => {
         );
     }
 
-    const availableLabs = kit.labs.filter(lab => lab.is_deleted);
+    const availableLabs = kit?.labs?.filter(lab => lab.is_deleted) || [];  // Add safe optional chaining
+
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -101,22 +103,25 @@ const Detailkits = ({ route }) => {
                     <Text style={styles.description}>{kit.description}</Text>
 
                     {/* Render only available Labs */}
+                    {/* Render only available Labs */}
                     <Text style={styles.labsTitle}>Recommended Labs:</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScrollView}>
-                        {availableLabs.map((lab) => (
-                            <View key={lab._id} style={styles.labItem}>
-                                <Text style={styles.labTitle}>{lab.name}</Text>
-                                <Text style={styles.labDescription}>{lab.description}</Text>
-                                <Text style={styles.labPrice}>Price: ${lab.price.toFixed(2)}</Text>
-                                <TouchableOpacity onPress={() => {/* Navigate to lab details */ }}>
-                                    <Text style={styles.labLink}>View Lab Details</Text>
-                                </TouchableOpacity>
-                            </View>
-                        ))}
-                        {availableLabs.length === 0 && (
+                        {availableLabs.length > 0 ? (
+                            availableLabs.map((lab) => (
+                                <View key={lab._id} style={styles.labItem}>
+                                    <Text style={styles.labTitle}>{lab.name}</Text>
+                                    <Text style={styles.labDescription}>{lab.description}</Text>
+                                    <Text style={styles.labPrice}>Price: ${lab.price.toFixed(2)}</Text>
+                                    <TouchableOpacity onPress={() => {/* Navigate to lab details */ }}>
+                                        <Text style={styles.labLink}>View Lab Details</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ))
+                        ) : (
                             <Text style={styles.noLabsText}>No available labs.</Text>
                         )}
                     </ScrollView>
+
                 </View>
             </ScrollView>
         </GestureHandlerRootView>

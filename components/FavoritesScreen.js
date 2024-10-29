@@ -26,9 +26,8 @@ const FavoritesScreen = () => {
   const [openSwipeId, setOpenSwipeId] = useState(null);
   const navigation = useNavigation();
 
-  // New state variables for the confirmation modal
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
-  const [deleteType, setDeleteType] = useState(null); // 'all' or 'selected'
+  const [deleteType, setDeleteType] = useState(null);
 
   useEffect(() => {
     loadFavorites();
@@ -46,8 +45,12 @@ const FavoritesScreen = () => {
       const storedFavorites = await AsyncStorage.getItem('favoriteskits');
       if (storedFavorites) {
         const favoritesArray = JSON.parse(storedFavorites);
+        console.log("🚀 ~ loadFavorites ~ favoritesArray:", favoritesArray)
+
         setFavoritesKits(favoritesArray);
         await fetchKits(favoritesArray);
+      } else {
+        setFavoritesKits([]);
       }
     } catch (error) {
       console.error('Error loading favoriteskits: ', error);
@@ -58,19 +61,27 @@ const FavoritesScreen = () => {
 
   const fetchKits = async (favoritesArray) => {
     try {
-      const responses = await Promise.all(
-        favoritesArray.map(async (_id) => {
-          const response = await getKitByID(_id);
-          return response && Array.isArray(response) ? response[0] : null;
+      const kitsData = await Promise.all(
+        favoritesArray.map(async (kitID) => {
+          const response = await getKitByID(kitID);
+          if (response.success) {
+            return response.data;  // Access the data property
+          } else {
+            console.error(`Error fetching kit with ID ${kitID}:`, response);
+            return null; // You might want to handle this case differently
+          }
         })
       );
 
-      const validKits = responses.filter(kit => kit && kit._id);
-      setKits(validKits);
+      // Filter out any null values in case of unsuccessful fetches
+      const filteredKits = kitsData.filter(kit => kit !== null);
+      console.log("🚀 ~ fetchKits ~ filteredKits:", filteredKits);
+      setKits(filteredKits);
     } catch (error) {
       console.error('Error fetching kits: ', error);
     }
   };
+
 
   const longPressToSelect = () => {
     setSelectionMode(true);
@@ -134,11 +145,11 @@ const FavoritesScreen = () => {
         console.error('Error deleting all favorites: ', error);
       }
     }
-    setConfirmModalVisible(false); // Close the modal after deletion
+    setConfirmModalVisible(false);
   };
 
   const cancelDelete = () => {
-    setConfirmModalVisible(false); // Close the modal without action
+    setConfirmModalVisible(false);
   };
 
   const renderRightActions = (_id) => (
@@ -214,33 +225,32 @@ const FavoritesScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-      <View style={styles.headerButtonsContainer}>
-  {selectionMode && (
-    <>
-      <TouchableOpacity style={styles.headerButton} onPress={selectAll}>
-        <Text style={styles.headerButtonText}>
-          {selectedItems.size === favoritesKits.length ? 'Cancel' : 'Select All'}
-        </Text>
-      </TouchableOpacity>
-      {selectedItems.size > 0 && (
-        <TouchableOpacity onPress={cancelSelection} style={styles.exitButton}>
-          <Text style={styles.headerButtonText}>Exit Selection</Text>
-        </TouchableOpacity>
-      )}
-      {selectedItems.size > 0 && (
-        <TouchableOpacity style={styles.headerButton} onPress={deleteSelectedFavorites}>
-          <Text style={styles.headerButtonText}>Delete Selected</Text>
-        </TouchableOpacity>
-      )}
-    </>
-  )}
-  {!selectionMode && favoritesKits.length > 0 && (
-    <TouchableOpacity style={styles.deleteAllButton} onPress={deleteAllFavorites}>
-      <Text style={styles.headerButtonText}>Delete All</Text>
-    </TouchableOpacity>
-  )}
-</View>
-
+        <View style={styles.headerButtonsContainer}>
+          {selectionMode && (
+            <>
+              <TouchableOpacity style={styles.headerButton} onPress={selectAll}>
+                <Text style={styles.headerButtonText}>
+                  {selectedItems.size === favoritesKits.length ? 'Cancel' : 'Select All'}
+                </Text>
+              </TouchableOpacity>
+              {selectedItems.size > 0 && (
+                <TouchableOpacity onPress={cancelSelection} style={styles.exitButton}>
+                  <Text style={styles.headerButtonText}>Exit Selection</Text>
+                </TouchableOpacity>
+              )}
+              {selectedItems.size > 0 && (
+                <TouchableOpacity style={styles.headerButton} onPress={deleteSelectedFavorites}>
+                  <Text style={styles.headerButtonText}>Delete Selected</Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+          {!selectionMode && favoritesKits.length > 0 && (
+            <TouchableOpacity style={styles.deleteAllButton} onPress={deleteAllFavorites}>
+              <Text style={styles.headerButtonText}>Delete All</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {loading ? (
@@ -258,24 +268,15 @@ const FavoritesScreen = () => {
       ) : (
         <View style={styles.noFavoritesContainer}>
           <Icon name="frown-o" size={50} color="#888" />
-          <Text style={styles.noFavoritesText}>No favorites kits added yet.</Text>
+          <Text style={styles.noFavoritesText}>No favorite kits yet!</Text>
         </View>
       )}
 
-      {/* Confirmation Modal */}
-      <Modal
-        transparent={true}
-        animationType="slide"
-        visible={confirmModalVisible}
-        onRequestClose={cancelDelete}
-      >
+      <Modal visible={confirmModalVisible} transparent animationType="fade">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {deleteType === 'all' ? 'Confirm Delete All' : 'Confirm Delete Selected'}
-            </Text>
-            <Text style={styles.modalMessage}>
-              Are you sure you want to {deleteType === 'all' ? 'delete all favorites?' : 'delete selected favorites?'}
+            <Text style={styles.modalText}>
+              {deleteType === 'all' ? 'Delete all favorites?' : 'Delete selected favorites?'}
             </Text>
             <View style={styles.modalButtonsContainer}>
               <TouchableOpacity style={styles.modalButton} onPress={confirmDelete}>
@@ -429,6 +430,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     elevation: 10,
+  },
+  modalText: {
+    paddingBottom: '10px'
   },
   modalTitle: {
     fontSize: 20,
