@@ -13,6 +13,7 @@ import AllComments from "./components/AllComments";
 import HomeScreen from "./components/HomeScreen";
 import KitsScreen from "./components/KitsScreen";
 import LabsScreen from "./components/LabsScreen";
+import LoginScreen from "./components/LoginScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -28,6 +29,7 @@ const HomeStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
+
     <Stack.Screen
       name="Detailkits"
       component={Detailkits}
@@ -36,11 +38,12 @@ const HomeStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
+
     <Stack.Screen
-      name="AllComments"
-      component={AllComments}
+      name="Login"
+      component={LoginScreen}
       options={{
-        title: "All Comments",
+        title: "Login",
         headerTitleStyle: styles.headerTitle,
       }}
     />

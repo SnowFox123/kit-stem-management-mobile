@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Button } from 'react-native';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -175,8 +175,13 @@ const HomeScreen = () => {
         setSearchQuery(query);
     };
 
+    const handleNavigateLogin = () => {
+        navigation.navigate('Login');
+    }
+
     return (
         <View style={styles.container}>
+            <Button title='Login' onPress={() => navigation.navigate('Login')} />
             <View style={styles.searchContainer}>
                 <TextInput
                     ref={searchInputRef}

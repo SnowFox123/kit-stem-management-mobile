@@ -49,36 +49,36 @@ export const login = async (memberName, password) => {
 
 export const signup = async (name, password, role, phone) => {
   try {
-      const response = await axiosInstance.post('http://localhost:1811/api/auth/register', {
-          memberName: name,
-          password,
-          name : role,
-          phoneNumber: phone,
-      });
+    const response = await axiosInstance.post('http://localhost:1811/api/auth/register', {
+      memberName: name,
+      password,
+      name: role,
+      phoneNumber: phone,
+    });
 
-      // Assuming your backend response has the structure you've provided
-      if (response.data && response.data.message) {
-          return {
-              isSuccess: true,
-              message: response.data.message,
-              data: response.data.data,
-          };
-      } else {
-          return {
-              isSuccess: false,
-              error: {
-                  message: response.data.error || "Registration failed",
-              },
-          };
-      }
-  } catch (error) {
-      console.error('Signup error:', error);
+    // Assuming your backend response has the structure you've provided
+    if (response.data && response.data.message) {
       return {
-          isSuccess: false,
-          error: {
-              message: error.response?.data?.error || "An unexpected error occurred",
-          },
+        isSuccess: true,
+        message: response.data.message,
+        data: response.data.data,
       };
+    } else {
+      return {
+        isSuccess: false,
+        error: {
+          message: response.data.error || "Registration failed",
+        },
+      };
+    }
+  } catch (error) {
+    console.error('Signup error:', error);
+    return {
+      isSuccess: false,
+      error: {
+        message: error.response?.data?.error || "An unexpected error occurred",
+      },
+    };
   }
 };
 
