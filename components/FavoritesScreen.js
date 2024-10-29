@@ -314,6 +314,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   headerButton: {
+    display: 'flex',
+    justifyContent: 'center',
     padding: 10,
     backgroundColor: '#FF6347',
     borderRadius: 5,
@@ -411,6 +413,8 @@ const styles = StyleSheet.create({
     color: '#888',
   },
   exitButton: {
+    display: 'flex',
+    justifyContent: 'center',
     marginLeft: 'auto',
     backgroundColor: '#FF6347',
     borderRadius: 8,
