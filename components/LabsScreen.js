@@ -1,32 +1,30 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView } from 'react-native';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Keyboard } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
-import { getKit } from '../service/UserServices';
+import { getLabs } from '../service/UserServices';
 
 const LabsScreen = () => {
     const [data, setData] = useState([]);
-    const [filteredArttools, setFilteredArttools] = useState([]);
+    const [filteredLabs, setFilteredLabs] = useState([]);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [favorites, setFavorites] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-    const searchInputRef = useRef(null);
     const navigation = useNavigation();
 
     useEffect(() => {
         fetchData();
-        loadFavorites(); // Load favorites on component mount
+        loadFavorites();
     }, []);
 
     useFocusEffect(
         useCallback(() => {
             fetchData();
-            loadFavorites(); // Load favorites when focused
+            loadFavorites();
         }, [])
     );
 
@@ -42,22 +40,14 @@ const LabsScreen = () => {
         try {
             const payload = {
                 searchCondition: { keyword: "", category_id: "", status: "", is_deleted: false },
-                pageInfo: { pageNum: 1, pageSize: 10 }
+                pageInfo: { pageNum: 1, pageSize: 100 }
             };
-            const response = await getKit(payload);
-            
+            const response = await getLabs(payload);
             const validData = response.data.pageData.filter(item => !item.is_deleted);
             setData(validData);
-            setFilteredArttools(validData);
+            setFilteredLabs(validData);
         } catch (error) {
             console.error("Error fetching data: ", error);
-            Toast.show({
-                text1: 'Error fetching data',
-                position: 'top',
-                type: 'error',
-                visibilityTime: 2000,
-                autoHide: true,
-            });
         } finally {
             setIsLoading(false);
         }
@@ -84,8 +74,8 @@ const LabsScreen = () => {
 
     const filterByCategory = (category) => {
         setSelectedCategory(category);
-        setFilteredArttools(category === 'All' 
-            ? data 
+        setFilteredLabs(category === 'All'
+            ? data
             : data.filter(item => item.category_name === category && !item.is_deleted)
         );
     };
@@ -96,29 +86,27 @@ const LabsScreen = () => {
             : [...favorites, id];
         setFavorites(updatedFavorites);
         await AsyncStorage.setItem('favoriteslabs', JSON.stringify(updatedFavorites));
-        Toast.show({
-            text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
-            position: 'top',
-            type: 'success',
-            visibilityTime: 2000,
-            autoHide: true,
-        });
+    };
+
+    const filterBySearch = () => {
+        const lowercaseQuery = searchQuery.toLowerCase();
+        setFilteredLabs(data.filter(item => item.name.toLowerCase().includes(lowercaseQuery) && !item.is_deleted));
     };
 
     const renderItem = ({ item }) => {
         const discountedPrice = item.discount
             ? (item.price * (1 - item.discount)).toFixed(2)
             : item.price.toFixed(2);
-    
+
         return (
             <TouchableOpacity
-                onPress={() => navigation.navigate('Detailkits', { kitId: item._id })}
+                onPress={() => navigation.navigate('Detaillabs', { kitId: item._id })}
                 style={styles.card}
             >
-                 <Image
-                    source={{ uri: item.image_url }}  
-                    style={styles.cardImage}           
-                    resizeMode="contain"               
+                <Image
+                    source={{ uri: item.lab_url }}
+                    style={styles.cardImage}
+                    resizeMode="contain"
                 />
                 <TouchableOpacity style={styles.favoriteButton} onPress={() => toggleFavorite(item._id)}>
                     <Icon
@@ -128,67 +116,53 @@ const LabsScreen = () => {
                     />
                 </TouchableOpacity>
                 <Text style={styles.artName} numberOfLines={2}>{item.name}</Text>
-    
+                <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
                 <View style={styles.ratingContainer}>
                     <Icon name="star" size={14} color="#FFD700" />
-                    <Text style={styles.averageRating}>sao</Text>
+                    <Text style={styles.averageRating}>Rating: {item.rating || 'N/A'}</Text>
                 </View>
-    
                 <View style={styles.priceGroup}>
                     <Text style={styles.price}>${discountedPrice}</Text>
                     {item.discount > 0 && (
                         <Text style={styles.oldPrice}>${item.price.toFixed(2)}</Text>
                     )}
                 </View>
-    
                 <View style={styles.categorySoldContainer}>
                     <Text style={styles.brand}>{item.category_name}</Text>
-                    <Text style={styles.soldText}>Sold 1.1k</Text>
+                    <Text style={styles.soldText}>Support: {item.max_support_count || ''}</Text>
                 </View>
-
                 <View style={styles.discountPosition}>
-                    {item.discount > 0 ? (
+                    {item.discount > 0 && (
                         <View style={styles.discountBadge}>
-                            <Text style={{ color: 'rgb(0, 110, 173)', fontWeight: '400' }}>{formatDiscount(item.discount)}</Text>
+                            <Text style={{ color: 'rgb(0, 110, 173)', fontWeight: '400' }}>
+                                {formatDiscount(item.discount)}
+                            </Text>
                         </View>
-                    ) : null}
+                    )}
                 </View>
             </TouchableOpacity>
         );
     };
 
-    const handleSearch = () => {
-        const query = searchQuery.toLowerCase();
-        if (query) {
-            setFilteredArttools(data.filter(item => item.name.toLowerCase().includes(query) && !item.is_deleted));
-        } else {
-            setFilteredArttools(data);
-        }
-    };
-
     const clearSearch = () => {
         setSearchQuery('');
-        setFilteredArttools(data);
-    };
-
-    const handleSearchChange = (query) => {
-        setSearchQuery(query);
+        setFilteredLabs(data);
     };
 
     return (
         <View style={styles.container}>
             <View style={styles.searchContainer}>
                 <TextInput
-                    ref={searchInputRef}
                     style={styles.searchInput}
-                    placeholder="Search by kits name..."
+                    placeholder="Search by labs name..."
                     value={searchQuery}
-                    onChangeText={handleSearchChange}
-                    onSubmitEditing={handleSearch}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={() => {
+                        filterBySearch();
+                        Keyboard.dismiss();
+                    }}
+                    returnKeyType="search"
                 />
-                <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-                    <Text style={styles.searchButtonText}>Search</Text>
-                </TouchableOpacity>
                 {searchQuery ? (
                     <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
                         <Icon name="times-circle" size={20} color="grey" />
@@ -217,11 +191,11 @@ const LabsScreen = () => {
             {isLoading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="rgb(0, 110, 173)" />
-                    <Text style={styles.loadingText}>Fetching Art Tool Details...</Text>
+                    <Text style={styles.loadingText}>Fetching Lab Details...</Text>
                 </View>
             ) : (
                 <FlatList
-                    data={filteredArttools}
+                    data={filteredLabs}
                     keyExtractor={(item) => item._id}
                     renderItem={renderItem}
                     numColumns={2}
@@ -239,43 +213,21 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        position: 'relative',
         marginBottom: 10,
     },
     searchInput: {
-        flex: 1,
         height: 40,
         borderColor: '#ddd',
         borderWidth: 1,
         borderRadius: 5,
         paddingHorizontal: 10,
-    },
-    searchButton: {
-        paddingHorizontal: 10,
-        backgroundColor: 'rgb(0, 110, 173)',
-        borderRadius: 5,
-        marginLeft: 5,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    categorySoldContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: 5,
-    },
-    searchButtonText: {
-        color: '#fff',
-        fontSize: 14,
+        paddingRight: 40, // Add padding for the clear button
     },
     clearButton: {
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        marginLeft: 10,
-        backgroundColor: 'grey',
-        borderRadius: 20,
+        position: 'absolute',
+        right: 10,
+        top: '25%',
     },
     categoryContainer: {
         flexDirection: 'row',

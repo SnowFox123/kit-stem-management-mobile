@@ -13,6 +13,7 @@ import AllComments from "./components/AllComments";
 import HomeScreen from "./components/HomeScreen";
 import KitsScreen from "./components/KitsScreen";
 import LabsScreen from "./components/LabsScreen";
+import Detaillabs from "./components/Detaillabs";
 import LoginScreen from "./components/LoginScreen";
 
 const Stack = createStackNavigator();
@@ -34,7 +35,7 @@ const HomeStack = () => (
       name="Detailkits"
       component={Detailkits}
       options={{
-        title: "Art Details",
+        title: "Detailkits",
         headerTitleStyle: styles.headerTitle,
       }}
     />
@@ -73,7 +74,7 @@ const KitsStack = () => (
       name="Detailkits"
       component={Detailkits}
       options={{
-        title: "Kit Details",
+        title: "Kit Detail",
         headerTitleStyle: styles.headerTitle,
       }}
     />
@@ -100,10 +101,10 @@ const LabsStack = () => (
       }}
     />
     <Stack.Screen
-      name="Detailkits"
-      component={Detailkits}
+      name="Detaillabs"
+      component={Detaillabs}
       options={{
-        title: "Lab Details",
+        title: "Lab Detail",
         headerTitleStyle: styles.headerTitle,
       }}
     />
