@@ -126,7 +126,7 @@ const FavoritesStack = () => (
       name="FavoritesScreen"
       component={FavoritesScreen}
       options={{
-        title: "Favorite Arttools",
+        title: "Favorite kits",
         headerTitleStyle: styles.headerTitle,
       }}
     />
