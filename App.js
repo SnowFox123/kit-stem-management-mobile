@@ -15,6 +15,7 @@ import KitsScreen from "./components/KitsScreen";
 import LabsScreen from "./components/LabsScreen";
 import Detaillabs from "./components/Detaillabs";
 import LoginScreen from "./components/LoginScreen";
+import HomeScreen2 from "./components/HomeScreen2";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -28,6 +29,7 @@ const HomeStack = () => (
       options={{
         title: "Home",
         headerTitleStyle: styles.headerTitle,
+        headerShown: false,
       }}
     />
 
@@ -218,3 +220,6 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+
+//npm install react-native-safe-area-context
+
