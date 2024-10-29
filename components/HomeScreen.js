@@ -308,7 +308,8 @@ const styles = StyleSheet.create({
     },
     card: {
         width: '48%',
-        marginBottom: 10,
+        marginVertical: 10,
+        marginHorizontal: '1%',
         borderWidth: 1,
         borderColor: '#ddd',
         borderRadius: 10,
