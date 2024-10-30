@@ -4,9 +4,12 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
+import { useNavigation } from '@react-navigation/native';
 import { getKitByID, addToCart } from '../service/UserServices';
+import { SafeAreaView } from 'react-native-safe-area-context'; // Import SafeAreaView from the new library
 
 const Detailkits = ({ route }) => {
+    const navigation = useNavigation();
     const { kitId } = route.params;
     const [kit, setKit] = useState(null);
     const [favorites, setFavorites] = useState([]);
@@ -19,7 +22,6 @@ const Detailkits = ({ route }) => {
     const fetchKitDetails = async () => {
         try {
             const response = await getKitByID(kitId);
-            console.log("🚀 ~ fetchKitDetails ~ response:", response.data);
             if (response) {
                 setKit(response.data);
             }
@@ -105,10 +107,23 @@ const Detailkits = ({ route }) => {
         );
     }
 
-    const availableLabs = kit?.labs?.filter(lab => lab.is_deleted) || [];
+    const availableLabs = kit?.labs?.filter(lab => !lab.is_deleted) || [];
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
+            {/* Header */}
+        <SafeAreaView style={styles.container}>
+
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
+                    <Icon name="arrow-left" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Kit Details</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('CartUser')} style={styles.headerButton}>
+                    <Icon name="shopping-cart" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+            </View>
+
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.imageContainer}>
                     <Image source={{ uri: kit.image_url }} style={styles.image} resizeMode="contain" />
@@ -149,15 +164,30 @@ const Detailkits = ({ route }) => {
                 </View>
             </ScrollView>
 
-            {/* Fixed Add to Cart Button at the Bottom */}
             <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
                 <Text style={styles.addToCartText}>Add to Cart</Text>
             </TouchableOpacity>
+            </SafeAreaView>
         </GestureHandlerRootView>
     );
 };
 
 const styles = StyleSheet.create({
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 10,
+        backgroundColor: 'rgb(0, 110, 173)',
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+    },
+    headerButton: {
+        padding: 10,
+    },
     container: {
         flexGrow: 1,
         backgroundColor: '#FFFFFF',
@@ -294,11 +324,11 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 8,
         alignItems: 'center',
-        position: 'absolute', // Make sure this is absolute to keep it at the bottom
+        position: 'absolute',
         bottom: 20,
         left: 20,
         right: 20,
-        zIndex: 100, // Correctly set zIndex for layering
+        zIndex: 100,
     },
     addToCartText: {
         color: '#FFFFFF',
