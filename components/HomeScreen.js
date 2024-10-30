@@ -1,12 +1,47 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Import icons from FontAwesome
 import { useNavigation } from '@react-navigation/native'; // Import useNavigation
 import { SafeAreaView } from 'react-native-safe-area-context'; // Import SafeAreaView from the new library
+import { getBlogs } from '../service/blogService';
+import BlogCard from './component/card';
+import { getAllCategories } from '../service/categoryService';
+import Tag from './component/tag';
 
 const HomeScreen = () => {
     const navigation = useNavigation(); // Initialize navigation
+    const [blogs, setBlogs] = useState([]);
+    const [categories, setCategories] = useState([]);
+
+    const fetchCategories = async () => {
+        try {
+            const response = await getAllCategories();
+            console.log('====================================');
+            console.log("category", response);
+            console.log('====================================');
+            setCategories(response);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const fetchBlogs = async () => {
+        try {
+            const response = await getBlogs();
+            console.log('====================================');
+            console.log("response: ", response.data);
+            console.log('====================================');
+            setBlogs(response.data.pageData);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    useEffect(() => {
+        fetchBlogs();
+        fetchCategories();
+    }, []);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -32,9 +67,42 @@ const HomeScreen = () => {
                 </View>
             </View>
             {/* Main content goes here */}
-            <View style={styles.content}>
-                <Text style={styles.welcomeText}>Welcome to the Home Screen!</Text>
-            </View>
+
+            {/* Test */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {categories.length > 0 ? (
+                    categories.map((category) => (
+                        <Tag
+                            key={category._id}
+                            name={category.name}
+                        />
+                    ))
+                ) : (
+                    <Text>No Category available.</Text>
+                )}
+            </ScrollView>
+            {/* End Test */}
+
+            {/* Our BLogs */}
+            <Text style={{ fontSize: 30, textAlign: 'center', fontWeight: '700' }}>Our Blogs</Text>
+            <ScrollView horizontal={true} contentContainerStyle={styles.scrollViewStyle} showsHorizontalScrollIndicator={false}>
+                {blogs.length > 0 ? (
+                    blogs.map((blog) => (
+                        <BlogCard
+                            key={blog._id}
+                            title={blog.title}
+                            user_name={blog.user_name}
+                            category_name={blog.category_name}
+                            description={blog.description}
+                            image_url={blog.image_url}
+                            created_at={blog.created_at}
+                        />
+                    ))
+                ) : (
+                    <Text>No blogs available.</Text>
+                )}
+            </ScrollView>
+            {/* End Our BLogs */}
         </SafeAreaView>
     );
 };
@@ -80,6 +148,13 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
     },
+    scrollViewStyle: {
+        paddingHorizontal: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 20,
+        height: 500
+    }
 });
 
 export default HomeScreen;
