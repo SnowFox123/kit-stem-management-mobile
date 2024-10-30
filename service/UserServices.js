@@ -24,6 +24,18 @@ export const getLabs = async (payload) => {
     }
 };
 
+export const getCombo = async (payload) => {
+    try {
+        const response = await axiosInstance.post('/client/combo/search', payload);
+
+        // console.log(response)
+        return response; // The interceptor returns only the data, so this is equivalent to returning response.data
+    } catch (error) {
+        console.error("Error fetching data: ", error);
+        throw error; // Throw the error for handling in the component
+    }
+};
+
 
 export const getKitByID = async (id) => {
     try {
@@ -55,6 +67,19 @@ export const getKitFavoriteByID = async (id) => {
 
         // console.log(response)
         return response.data; // Giả sử data là mảng, lấy phần tử đầu tiên
+    } catch (error) {
+        console.error("Error fetching data: ", error);
+        throw error; // Throw the error for handling in the component
+    }
+};
+
+
+export const addToCart = async (payload) => {
+    try {
+        const response = await axiosInstance.post('/cart/create', payload);
+
+        // console.log(response)
+        return response; // The interceptor returns only the data, so this is equivalent to returning response.data
     } catch (error) {
         console.error("Error fetching data: ", error);
         throw error; // Throw the error for handling in the component

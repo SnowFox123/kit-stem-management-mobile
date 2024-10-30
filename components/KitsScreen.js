@@ -119,23 +119,26 @@ const KitsScreen = () => {
                         color="red"
                     />
                 </TouchableOpacity>
-                <Text style={styles.artName} numberOfLines={2}>{item.name}</Text>
+                <View style={{ padding: 10 }}>
+                    <Text style={styles.artName} numberOfLines={2}>{item.name}</Text>
 
-                <View style={styles.ratingContainer}>
-                    <Icon name="star" size={14} color="#FFD700" />
-                    <Text style={styles.averageRating}>sao</Text>
-                </View>
+                    <View style={styles.ratingContainer}>
+                        <Icon name="star" size={14} color="#FFD700" />
+                        <Text style={styles.averageRating}>sao</Text>
+                    </View>
 
-                <View style={styles.priceGroup}>
-                    <Text style={styles.price}>${discountedPrice}</Text>
-                    {item.discount > 0 && (
-                        <Text style={styles.oldPrice}>${item.price.toFixed(2)}</Text>
-                    )}
-                </View>
+                    <View style={styles.priceGroup}>
+                        <Text style={styles.price}>${discountedPrice}</Text>
+                        {item.discount > 0 && (
+                            <Text style={styles.oldPrice}>${item.price.toFixed(2)}</Text>
+                        )}
+                    </View>
 
-                <View style={styles.categorySoldContainer}>
-                    <Text style={styles.brand}>{item.category_name}</Text>
-                    <Text style={styles.soldText}>Sold 1.1k</Text>
+                    <View style={styles.categorySoldContainer}>
+                        <Text style={styles.brand}>{item.category_name}</Text>
+                        <Text style={styles.soldText}>Sold 1.1k</Text>
+                    </View>
+
                 </View>
 
                 <View style={styles.discountPosition}>
@@ -275,7 +278,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ddd',
         borderRadius: 10,
-        padding: 10,
+        // padding: 10,
         position: 'relative',
         overflow: 'hidden',
     },
