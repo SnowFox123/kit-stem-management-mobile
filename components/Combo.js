@@ -1,19 +1,20 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Keyboard } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
-import { getLabs } from '../service/UserServices';
+import { getCombo, getKit } from '../service/UserServices';
 
-const LabsScreen = () => {
+const Combo = () => {
     const [data, setData] = useState([]);
-    const [filteredLabs, setFilteredLabs] = useState([]);
+    const [filteredArttools, setFilteredArttools] = useState([]);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [favorites, setFavorites] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const searchInputRef = useRef(null);
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -39,15 +40,25 @@ const LabsScreen = () => {
         setIsLoading(true);
         try {
             const payload = {
-                searchCondition: { keyword: "", category_id: "", status: "", is_deleted: false },
-                pageInfo: { pageNum: 1, pageSize: 100 }
+                searchCondition: { keyword: "", category_id: "", is_deleted: false },
+                pageInfo: { pageNum: 1, pageSize: 10 }
             };
-            const response = await getLabs(payload);
+            const response = await getCombo(payload);
+            // console.log("🚀 ~ fetchData ~ response:", response)
+
+
             const validData = response.data.pageData.filter(item => !item.is_deleted);
             setData(validData);
-            setFilteredLabs(validData);
+            setFilteredArttools(validData);
         } catch (error) {
             console.error("Error fetching data: ", error);
+            Toast.show({
+                text1: 'Error fetching data',
+                position: 'top',
+                type: 'error',
+                visibilityTime: 2000,
+                autoHide: true,
+            });
         } finally {
             setIsLoading(false);
         }
@@ -55,7 +66,7 @@ const LabsScreen = () => {
 
     const loadFavorites = async () => {
         try {
-            const storedFavorites = await AsyncStorage.getItem('favoriteslabs');
+            const storedFavorites = await AsyncStorage.getItem('favoriteskits');
             setFavorites(storedFavorites ? JSON.parse(storedFavorites) : []);
         } catch (error) {
             console.error("Error loading favorites: ", error);
@@ -74,7 +85,7 @@ const LabsScreen = () => {
 
     const filterByCategory = (category) => {
         setSelectedCategory(category);
-        setFilteredLabs(category === 'All'
+        setFilteredArttools(category === 'All'
             ? data
             : data.filter(item => item.category_name === category && !item.is_deleted)
         );
@@ -85,12 +96,7 @@ const LabsScreen = () => {
             ? favorites.filter(favId => favId !== id)
             : [...favorites, id];
         setFavorites(updatedFavorites);
-        await AsyncStorage.setItem('favoriteslabs', JSON.stringify(updatedFavorites));
-    };
-
-    const filterBySearch = () => {
-        const lowercaseQuery = searchQuery.toLowerCase();
-        setFilteredLabs(data.filter(item => item.name.toLowerCase().includes(lowercaseQuery) && !item.is_deleted));
+        await AsyncStorage.setItem('favoriteskits', JSON.stringify(updatedFavorites));
     };
 
     const renderItem = ({ item }) => {
@@ -100,11 +106,11 @@ const LabsScreen = () => {
 
         return (
             <TouchableOpacity
-                onPress={() => navigation.navigate('Detaillabs', { kitId: item._id })}
+                onPress={() => navigation.navigate('Detailkits', { kitId: item._id })}
                 style={styles.card}
             >
                 <Image
-                    source={{ uri: item.lab_url }}
+                    source={{ uri: item.image_url }}
                     style={styles.cardImage}
                     resizeMode="contain"
                 />
@@ -115,56 +121,67 @@ const LabsScreen = () => {
                         color="red"
                     />
                 </TouchableOpacity>
-
-                <View style={{padding: 10}}>
+                <View style={{ padding: 10 }}>
                     <Text style={styles.artName} numberOfLines={2}>{item.name}</Text>
-                    <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
+
                     <View style={styles.ratingContainer}>
                         <Icon name="star" size={14} color="#FFD700" />
-                        <Text style={styles.averageRating}>Rating: {item.rating || 'N/A'}</Text>
+                        <Text style={styles.averageRating}>sao</Text>
                     </View>
+
                     <View style={styles.priceGroup}>
                         <Text style={styles.price}>${discountedPrice}</Text>
                         {item.discount > 0 && (
                             <Text style={styles.oldPrice}>${item.price.toFixed(2)}</Text>
                         )}
                     </View>
+
                     <View style={styles.categorySoldContainer}>
                         <Text style={styles.brand}>{item.category_name}</Text>
-                        <Text style={styles.soldText}>Support: {item.max_support_count || ''}</Text>
+                        <Text style={styles.soldText}>Sold 1.1k</Text>
                     </View>
+
                 </View>
 
                 <View style={styles.discountPosition}>
-                    {item.discount > 0 && (
+                    {item.discount > 0 ? (
                         <View style={styles.discountBadge}>
-                            <Text style={{ color: 'rgb(0, 110, 173)', fontWeight: '400' }}>
-                                {formatDiscount(item.discount)}
-                            </Text>
+                            <Text style={{ color: 'rgb(0, 110, 173)', fontWeight: '400' }}>{formatDiscount(item.discount)}</Text>
                         </View>
-                    )}
+                    ) : null}
                 </View>
             </TouchableOpacity>
         );
     };
 
+    const handleSearch = () => {
+        const query = searchQuery.toLowerCase();
+        if (query) {
+            setFilteredArttools(data.filter(item => item.name.toLowerCase().includes(query) && !item.is_deleted));
+        } else {
+            setFilteredArttools(data);
+        }
+    };
+
     const clearSearch = () => {
         setSearchQuery('');
-        setFilteredLabs(data);
+        setFilteredArttools(data);
+    };
+
+    const handleSearchChange = (query) => {
+        setSearchQuery(query);
     };
 
     return (
         <View style={styles.container}>
             <View style={styles.searchContainer}>
                 <TextInput
+                    ref={searchInputRef}
                     style={styles.searchInput}
-                    placeholder="Search by labs name..."
+                    placeholder="Search by kits name..."
                     value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    onSubmitEditing={() => {
-                        filterBySearch();
-                        Keyboard.dismiss();
-                    }}
+                    onChangeText={handleSearchChange}
+                    onSubmitEditing={handleSearch}
                     returnKeyType="search"
                 />
                 {searchQuery ? (
@@ -195,11 +212,11 @@ const LabsScreen = () => {
             {isLoading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="rgb(0, 110, 173)" />
-                    <Text style={styles.loadingText}>Fetching Lab Details...</Text>
+                    <Text style={styles.loadingText}>Fetching Kits Details...</Text>
                 </View>
             ) : (
                 <FlatList
-                    data={filteredLabs}
+                    data={filteredArttools}
                     keyExtractor={(item) => item._id}
                     renderItem={renderItem}
                     numColumns={2}
@@ -339,4 +356,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default LabsScreen;
+export default Combo;
