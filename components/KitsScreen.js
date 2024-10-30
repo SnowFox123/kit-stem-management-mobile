@@ -122,10 +122,6 @@ const KitsScreen = () => {
                 <View style={{ padding: 10 }}>
                     <Text style={styles.artName} numberOfLines={2}>{item.name}</Text>
 
-                    <View style={styles.ratingContainer}>
-                        <Icon name="star" size={14} color="#FFD700" />
-                        <Text style={styles.averageRating}>sao</Text>
-                    </View>
 
                     <View style={styles.priceGroup}>
                         <Text style={styles.price}>${discountedPrice}</Text>
@@ -218,7 +214,6 @@ const KitsScreen = () => {
                     keyExtractor={(item) => item._id}
                     renderItem={renderItem}
                     numColumns={2}
-                    contentContainerStyle={{ paddingBottom: 100 }}
                 />
             )}
         </View>
@@ -275,13 +270,14 @@ const styles = StyleSheet.create({
     card: {
         width: '48%',
         marginBottom: 10,
+        marginHorizontal: '1%', // Adjusts spacing between columns
         borderWidth: 1,
         borderColor: '#ddd',
         borderRadius: 10,
-        // padding: 10,
         position: 'relative',
         overflow: 'hidden',
     },
+    
     cardImage: {
         width: '100%',
         height: 150,

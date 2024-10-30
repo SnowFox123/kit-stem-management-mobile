@@ -36,6 +36,18 @@ export const getCombo = async (payload) => {
     }
 };
 
+export const getUserDetail = async (id) => {
+    try {
+        const response = await axiosInstance.get(`/users/${id}`);
+
+        // console.log(response)
+        return response; // The interceptor returns only the data, so this is equivalent to returning response.data
+    } catch (error) {
+        console.error("Error fetching data: ", error);
+        throw error; // Throw the error for handling in the component
+    }
+};
+
 
 export const getKitByID = async (id) => {
     try {
@@ -52,6 +64,18 @@ export const getKitByID = async (id) => {
 export const getLabByID = async (id) => {
     try {
         const response = await axiosInstance.get(`/client/lab/${id}`);
+
+        // console.log(response)
+        return response; // The interceptor returns only the data, so this is equivalent to returning response.data
+    } catch (error) {
+        console.error("Error fetching data: ", error);
+        throw error; // Throw the error for handling in the component
+    }
+};
+
+export const getComboByID = async (id) => {
+    try {
+        const response = await axiosInstance.get(`/client/combo/${id}`);
 
         // console.log(response)
         return response; // The interceptor returns only the data, so this is equivalent to returning response.data
@@ -86,10 +110,35 @@ export const addToCart = async (payload) => {
     }
 };
 
+export const detelteCart = async (payloaddelete) => {
+    try {
+        const response = await axiosInstance.delete('/cart/', payloaddelete);
+
+        // console.log(response)
+        return response; // The interceptor returns only the data, so this is equivalent to returning response.data
+    } catch (error) {
+        console.error("Error fetching data: ", error);
+        throw error; // Throw the error for handling in the component
+    }
+};
+
 
 export const getCart = async (payload) => {
     try {
         const response = await axiosInstance.post('/cart/search', payload);
+
+        // console.log(response)
+        return response; // The interceptor returns only the data, so this is equivalent to returning response.data
+    } catch (error) {
+        console.error("Error fetching data: ", error);
+        throw error; // Throw the error for handling in the component
+    }
+};
+
+
+export const UpdateStatusCart = async (payload2) => {
+    try {
+        const response = await axiosInstance.post('/cart/update-status', payload2);
 
         // console.log(response)
         return response; // The interceptor returns only the data, so this is equivalent to returning response.data
