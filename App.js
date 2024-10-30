@@ -9,13 +9,12 @@ import Toast from "react-native-toast-message";
 import FavoritesScreen from "./components/FavoritesScreen";
 import Detailkits from "./components/Detailkits";
 import Profile from "./components/Profile";
-import AllComments from "./components/AllComments";
 import HomeScreen from "./components/HomeScreen";
 import KitsScreen from "./components/KitsScreen";
 import LabsScreen from "./components/LabsScreen";
 import Detaillabs from "./components/Detaillabs";
 import LoginScreen from "./components/LoginScreen";
-import HomeScreen2 from "./components/HomeScreen2";
+import RegisterScreen from "./components/RegisterScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -50,6 +49,16 @@ const HomeStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
+
+    <Stack.Screen
+      name="Register"
+      component={RegisterScreen}
+      options={{
+        title: "Create New Account",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+
     <Stack.Screen
       name="Profile"
       component={Profile}

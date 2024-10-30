@@ -1,4 +1,4 @@
-import { Button, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Button, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import dayjs from 'dayjs';
@@ -7,7 +7,6 @@ import Avatar from './component/avatar';
 import Icon from "react-native-vector-icons/FontAwesome";
 import { useNavigation } from '@react-navigation/native';
 import { axiosInstance } from '../service/customize-axios';
-import LoginScreen from './LoginScreen';
 
 const Profile = () => {
 
@@ -47,7 +46,7 @@ const Profile = () => {
                     <Text style={{ fontSize: 30, marginBottom: 20, textAlign: 'center', fontWeight: '600' }}>Your Profile</Text>
 
                     <View style={styles.avatar}>
-                        {userProfile.avatar || <Avatar name={userProfile.name} />}
+                        {<Avatar name={userProfile.name} />}
                     </View>
 
                     <Text style={styles.label}>ID</Text>
@@ -82,16 +81,19 @@ const Profile = () => {
                         <Text style={styles.value}>{dayjs(userProfile.dob).format('DD/MM/YYYY')}</Text>
                     </View>
 
-                    <Pressable style={styles.logoutButton} onPress={handleLogout}>
+                    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                         <Text style={{ color: '#000000', fontWeight: '500', fontSize: 24 }}>Logout</Text>
-                    </Pressable>
+                    </TouchableOpacity>
                 </View>
                 :
-                <View>
-                    <Button
-                        title="Go to Login"
+                <View style={{ backgroundColor: '#fff', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                    <TouchableOpacity
                         onPress={() => navigation.navigate('Home', { screen: 'Login' })}
-                    />
+
+                        style={styles.gotoLogin}
+                    >
+                        <Text style={{ color: '#000000', fontWeight: '500', fontSize: 24 }}>Go to Login</Text>
+                    </TouchableOpacity>
                 </View>
             }
         </SafeAreaView>
@@ -153,5 +155,14 @@ const styles = StyleSheet.create({
         borderColor: '#feb8f6',
         borderWidth: 1,
         justifyContent: 'center',
+    },
+    gotoLogin: {
+        borderWidth: 2,
+        padding: 20,
+        borderRadius: 10,
+        backgroundColor: '#fb7878',
+        justifyContent: 'center',
+        borderColor: '#ffffff',
+        marginTop: 20,
     }
 });
