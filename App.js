@@ -16,6 +16,7 @@ import Detaillabs from "./components/Detaillabs";
 import LoginScreen from "./components/LoginScreen";
 import RegisterScreen from "./components/RegisterScreen";
 import Combo from "./components/Combo";
+import CartUser from "./components/CartUser";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -116,6 +117,16 @@ const KitsStack = () => (
       options={{
         title: "Kit Detail",
         headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+      }}
+    />
+    <Stack.Screen
+      name="CartUser"
+      component={CartUser}
+      options={{
+        title: "Cart User",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
       }}
     />
     <Stack.Screen
