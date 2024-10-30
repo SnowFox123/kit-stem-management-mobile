@@ -9,13 +9,12 @@ import Toast from "react-native-toast-message";
 import FavoritesScreen from "./components/FavoritesScreen";
 import Detailkits from "./components/Detailkits";
 import Profile from "./components/Profile";
-import AllComments from "./components/AllComments";
 import HomeScreen from "./components/HomeScreen";
 import KitsScreen from "./components/KitsScreen";
 import LabsScreen from "./components/LabsScreen";
 import Detaillabs from "./components/Detaillabs";
 import LoginScreen from "./components/LoginScreen";
-import HomeScreen2 from "./components/HomeScreen2";
+import Combo from "./components/Combo";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -32,7 +31,6 @@ const HomeStack = () => (
         headerShown: false,
       }}
     />
-
     <Stack.Screen
       name="Detailkits"
       component={Detailkits}
@@ -41,7 +39,6 @@ const HomeStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
-
     <Stack.Screen
       name="Login"
       component={LoginScreen}
@@ -61,7 +58,36 @@ const HomeStack = () => (
   </Stack.Navigator>
 );
 
-// Kits stack navigator
+const ComboStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="Combo"
+      component={Combo}
+      options={{
+        title: "Combo Collection",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="Detaillabs"
+      component={Detaillabs}
+      options={{
+        title: "Lab Detail",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="Profile"
+      component={Profile}
+      options={{
+        title: "Profile",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+  </Stack.Navigator>
+);
+
+// Similarly define KitsStack, LabsStack, and FavoritesStack
 const KitsStack = () => (
   <Stack.Navigator>
     <Stack.Screen
@@ -91,7 +117,6 @@ const KitsStack = () => (
   </Stack.Navigator>
 );
 
-// Labs stack navigator
 const LabsStack = () => (
   <Stack.Navigator>
     <Stack.Screen
@@ -121,7 +146,6 @@ const LabsStack = () => (
   </Stack.Navigator>
 );
 
-// Favorites stack navigator
 const FavoritesStack = () => (
   <Stack.Navigator>
     <Stack.Screen
@@ -151,7 +175,6 @@ const FavoritesStack = () => (
   </Stack.Navigator>
 );
 
-// Main app component with tab navigator
 const App = () => {
   return (
     <NavigationContainer independent>
@@ -159,7 +182,6 @@ const App = () => {
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
             let iconName = "";
-
             if (route.name === "Home") {
               iconName = "home";
             } else if (route.name === "Favorites") {
@@ -170,12 +192,25 @@ const App = () => {
               iconName = "wrench";
             } else if (route.name === "Labs") {
               iconName = "mortar-board";
+            } else if (route.name === "Combo") {
+              iconName = "rocket";
             }
 
             return <Icon name={iconName} size={size} color={color} />;
           },
           tabBarActiveTintColor: "rgb(0, 110, 173)",
           tabBarInactiveTintColor: "gray",
+          tabBarStyle: ((route) => {
+            console.log(route.name)
+            const routeName = route.name;
+
+            console.log("🚀 ~ App ~ routeName:", routeName)
+            // Hide bottom tab bar on specific screens
+            if (["Detailkits", "Detaillabs"].includes(routeName)) {
+              return { display: "none" };
+            }
+            return;
+          })(route),
         })}
       >
         <Tab.Screen
@@ -184,13 +219,18 @@ const App = () => {
           options={{ title: "Home", headerShown: false, unmountOnBlur: true }}
         />
         <Tab.Screen
+          name="Combo"
+          component={ComboStack}
+          options={{ title: "Combo", headerShown: false, unmountOnBlur: true }}
+        />
+        <Tab.Screen
           name="Kits"
-          component={KitsStack} // Use KitsStack here
+          component={KitsStack}
           options={{ title: "Kits", headerShown: false, unmountOnBlur: true }}
         />
         <Tab.Screen
           name="Labs"
-          component={LabsStack} // Use LabsStack here
+          component={LabsStack}
           options={{ title: "Labs", headerShown: false, unmountOnBlur: true }}
         />
         <Tab.Screen
@@ -205,13 +245,11 @@ const App = () => {
         />
       </Tab.Navigator>
 
-      {/* Place Toast at the root level to be globally available */}
       <Toast />
     </NavigationContainer>
   );
 };
 
-// Styles for header title
 const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
@@ -220,6 +258,3 @@ const styles = StyleSheet.create({
 });
 
 export default App;
-
-//npm install react-native-safe-area-context
-

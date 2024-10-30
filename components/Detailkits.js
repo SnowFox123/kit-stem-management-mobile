@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
-import { getKitByID } from '../service/UserServices';
+import { getKitByID, addToCart } from '../service/UserServices';
 
 const Detailkits = ({ route }) => {
     const { kitId } = route.params;
@@ -19,20 +19,20 @@ const Detailkits = ({ route }) => {
     const fetchKitDetails = async () => {
         try {
             const response = await getKitByID(kitId);
-            console.log("🚀 ~ fetchKitDetails ~ response:", response.data)
+            console.log("🚀 ~ fetchKitDetails ~ response:", response.data);
             if (response) {
                 setKit(response.data);
             }
         } catch (error) {
             console.error("Error fetching kit details: ", error);
-            // Toast.show({
-            //     text1: 'Error fetching kit details',
-            //     text2: 'Please try again later.',
-            //     position: 'top',
-            //     type: 'error',
-            //     visibilityTime: 2000,
-            //     autoHide: true,
-            // });
+            Toast.show({
+                text1: 'Error fetching kit details',
+                text2: 'Please try again later.',
+                position: 'top',
+                type: 'error',
+                visibilityTime: 2000,
+                autoHide: true,
+            });
         }
     };
 
@@ -55,13 +55,41 @@ const Detailkits = ({ route }) => {
         setFavorites(updatedFavorites);
         await AsyncStorage.setItem('favoriteskits', JSON.stringify(updatedFavorites));
 
-        // Toast.show({
-        //     text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
-        //     position: 'top',
-        //     type: 'success',
-        //     visibilityTime: 2000,
-        //     autoHide: true,
-        // });
+        Toast.show({
+            text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
+            position: 'top',
+            type: 'success',
+            visibilityTime: 2000,
+            autoHide: true,
+        });
+    };
+
+    const handleAddToCart = async () => {
+        try {
+            const payload = {
+                product_id: kit._id,
+                product_type: "kit",
+            };
+            await addToCart(payload);
+            Toast.show({
+                text1: 'Added to Cart',
+                text2: `${kit.name} has been added to your cart!`,
+                position: 'top',
+                type: 'success',
+                visibilityTime: 2000,
+                autoHide: true,
+            });
+        } catch (error) {
+            console.error("Error adding to cart: ", error);
+            Toast.show({
+                text1: 'Error Adding to Cart',
+                text2: 'Please try again later.',
+                position: 'top',
+                type: 'error',
+                visibilityTime: 2000,
+                autoHide: true,
+            });
+        }
     };
 
     const newPriceAfterDiscount = (price, discount) => {
@@ -77,8 +105,7 @@ const Detailkits = ({ route }) => {
         );
     }
 
-    const availableLabs = kit?.labs?.filter(lab => lab.is_deleted) || [];  // Add safe optional chaining
-
+    const availableLabs = kit?.labs?.filter(lab => lab.is_deleted) || [];
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -102,8 +129,6 @@ const Detailkits = ({ route }) => {
                     <Text style={styles.descriptionTitle}>Description:</Text>
                     <Text style={styles.description}>{kit.description}</Text>
 
-                    {/* Render only available Labs */}
-                    {/* Render only available Labs */}
                     <Text style={styles.labsTitle}>Recommended Labs:</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScrollView}>
                         {availableLabs.length > 0 ? (
@@ -121,9 +146,13 @@ const Detailkits = ({ route }) => {
                             <Text style={styles.noLabsText}>No available labs.</Text>
                         )}
                     </ScrollView>
-
                 </View>
             </ScrollView>
+
+            {/* Fixed Add to Cart Button at the Bottom */}
+            <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
+                <Text style={styles.addToCartText}>Add to Cart</Text>
+            </TouchableOpacity>
         </GestureHandlerRootView>
     );
 };
@@ -150,7 +179,7 @@ const styles = StyleSheet.create({
     image: {
         width: '100%',
         height: 300,
-        resizeMode: 'cover',
+        resizeMode: 'contain',
     },
     favoriteIcon: {
         position: 'absolute',
@@ -259,6 +288,22 @@ const styles = StyleSheet.create({
         color: '#666666',
         textAlign: 'center',
         marginTop: 20,
+    },
+    addToCartButton: {
+        backgroundColor: '#FF6347',
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        position: 'absolute', // Make sure this is absolute to keep it at the bottom
+        bottom: 20,
+        left: 20,
+        right: 20,
+        zIndex: 100, // Correctly set zIndex for layering
+    },
+    addToCartText: {
+        color: '#FFFFFF',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 });
 
