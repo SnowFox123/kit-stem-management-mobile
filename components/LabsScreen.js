@@ -260,10 +260,10 @@ const styles = StyleSheet.create({
     card: {
         width: '48%',
         marginBottom: 10,
+        marginHorizontal: '1%', // Adjusts spacing between columns
         borderWidth: 1,
         borderColor: '#ddd',
         borderRadius: 10,
-        // padding: 10,
         position: 'relative',
         overflow: 'hidden',
     },

@@ -1,41 +1,67 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
+import {
+    View,
+    Text,
+    Image,
+    StyleSheet,
+    ActivityIndicator,
+    TouchableOpacity,
+    ScrollView,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
-import { getLabByID, addToCart } from '../service/UserServices'; // Make sure addToCart is imported
-import { SafeAreaView } from 'react-native-safe-area-context'; // Import SafeAreaView from the new library
+import { useNavigation } from '@react-navigation/native';
+import { addToCart, getComboByID } from '../service/UserServices';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const Detaillabs = ({ route, navigation }) => {
+const DetailCombo = ({ route }) => {
+    const navigation = useNavigation();
     const { kitId } = route.params;
     const [kit, setKit] = useState(null);
     const [favorites, setFavorites] = useState([]);
 
     useEffect(() => {
-        fetchLabDetails();
+        fetchKitDetails();
         loadFavorites();
     }, [kitId]);
 
-    const fetchLabDetails = async () => {
+    const fetchKitDetails = async () => {
         try {
-            const response = await getLabByID(kitId);
-            if (response && response.success && response.data) {
-                setKit(response.data); // assuming data comes directly under "data" in the response
+            const response = await getComboByID(kitId);
+            if (response && response.data) {
+                setKit(response.data);
+            } else {
+                Toast.show({
+                    text1: 'Kit not found',
+                    position: 'top',
+                    type: 'error',
+                    visibilityTime: 2000,
+                    autoHide: true,
+                });
             }
         } catch (error) {
-            console.error("Error fetching lab details: ", error);
+            console.error('Error fetching kit details: ', error);
+            Toast.show({
+                text1: 'Error fetching kit details',
+                text2: 'Please try again later.',
+                position: 'top',
+                type: 'error',
+                visibilityTime: 2000,
+                autoHide: true,
+            });
         }
     };
 
     const loadFavorites = async () => {
         try {
-            const storedFavorites = await AsyncStorage.getItem('favoriteslabs');
-            if (storedFavorites !== null) {
+            const storedFavorites = await AsyncStorage.getItem('favoriteskits');
+            if (storedFavorites) {
                 setFavorites(JSON.parse(storedFavorites));
             }
         } catch (error) {
-            console.error("Error loading favorites: ", error);
+            console.error('Error loading favorites: ', error);
         }
     };
 
@@ -45,7 +71,7 @@ const Detaillabs = ({ route, navigation }) => {
             : [...favorites, id];
 
         setFavorites(updatedFavorites);
-        await AsyncStorage.setItem('favoriteslabs', JSON.stringify(updatedFavorites));
+        await AsyncStorage.setItem('favoriteskits', JSON.stringify(updatedFavorites));
 
         Toast.show({
             text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
@@ -57,10 +83,11 @@ const Detaillabs = ({ route, navigation }) => {
     };
 
     const handleAddToCart = async () => {
+        if (!kit) return; // Ensure kit is defined before proceeding
         try {
             const payload = {
                 product_id: kit._id,
-                product_type: "lab",
+                product_type: 'combo',
             };
             await addToCart(payload);
             Toast.show({
@@ -72,7 +99,7 @@ const Detaillabs = ({ route, navigation }) => {
                 autoHide: true,
             });
         } catch (error) {
-            console.error("Error adding to cart: ", error);
+            console.error('Error adding to cart: ', error);
             Toast.show({
                 text1: 'Error Adding to Cart',
                 text2: 'Please try again later.',
@@ -85,37 +112,38 @@ const Detaillabs = ({ route, navigation }) => {
     };
 
     const newPriceAfterDiscount = (price, discount) => {
-        return price * (1 - discount / 100);
+        return price * (1 - discount);
     };
 
     if (!kit) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#FF6347" />
-                <Text style={styles.loadingText}>Fetching Lab Details...</Text>
+                <Text style={styles.loadingText}>Fetching Kit Details...</Text>
             </View>
         );
     }
 
+    // Check if labs is an array and filter it
+    const availableLabs = Array.isArray(kit.labs) ? kit.labs.filter(lab => !lab.is_deleted) : [];
+
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={styles.container}>
-
-            <View style={styles.container}>
+            <SafeAreaView style={styles.container}>
                 {/* Header */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
                         <Icon name="arrow-left" size={24} color="#FFFFFF" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Lab Details</Text>
+                    <Text style={styles.headerTitle}>Combo Details</Text>
                     <TouchableOpacity onPress={() => navigation.navigate('CartUser')} style={styles.headerButton}>
                         <Icon name="shopping-cart" size={24} color="#FFFFFF" />
                     </TouchableOpacity>
                 </View>
 
-                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <ScrollView contentContainerStyle={styles.container}>
                     <View style={styles.imageContainer}>
-                        <Image source={{ uri: kit.lab_url }} style={styles.image} resizeMode="contain" />
+                        <Image source={{ uri: kit.image_url }} style={styles.image} resizeMode="contain" />
                         <TouchableOpacity onPress={() => toggleFavorite(kit._id)} style={styles.favoriteIcon}>
                             <Icon name={favorites.includes(kit._id) ? 'heart' : 'heart-o'} size={24} color="red" />
                         </TouchableOpacity>
@@ -127,18 +155,35 @@ const Detaillabs = ({ route, navigation }) => {
                                 ${newPriceAfterDiscount(kit.price, kit.discount).toFixed(2)}
                             </Text>
                             <Text style={styles.originalPrice}>${kit.price.toFixed(2)}</Text>
-                            <Text style={styles.discount}>-{kit.discount}%</Text>
+                            <Text style={styles.discount}>-{(kit.discount * 100).toFixed(0)}%</Text>
                         </View>
                         <Text style={styles.category}>{kit.category_name}</Text>
                         <Text style={styles.descriptionTitle}>Description:</Text>
                         <Text style={styles.description}>{kit.description}</Text>
+
+                        <Text style={styles.labsTitle}>Recommended Labs:</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScrollView}>
+                            {availableLabs.length > 0 ? (
+                                availableLabs.map((lab) => (
+                                    <View key={lab._id} style={styles.labItem}>
+                                        <Text style={styles.labTitle}>{lab.name}</Text>
+                                        <Text style={styles.labDescription}>{lab.description}</Text>
+                                        <Text style={styles.labPrice}>Price: ${lab.price.toFixed(2)}</Text>
+                                        <TouchableOpacity onPress={() => {/* Navigate to lab details */ }}>
+                                            <Text style={styles.labLink}>View Lab Details</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ))
+                            ) : (
+                                <Text style={styles.noLabsText}>No available labs.</Text>
+                            )}
+                        </ScrollView>
                     </View>
                 </ScrollView>
 
                 <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
                     <Text style={styles.addToCartText}>Add to Cart</Text>
                 </TouchableOpacity>
-            </View>
             </SafeAreaView>
         </GestureHandlerRootView>
     );
@@ -164,9 +209,6 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         backgroundColor: '#FFFFFF',
     },
-    scrollContainer: {
-        flexGrow: 1,
-    },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -184,7 +226,7 @@ const styles = StyleSheet.create({
     image: {
         width: '100%',
         height: 300,
-        resizeMode: 'cover',
+        resizeMode: 'contain',
     },
     favoriteIcon: {
         position: 'absolute',
@@ -245,6 +287,55 @@ const styles = StyleSheet.create({
         color: '#666666',
         lineHeight: 22,
     },
+    labsTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#333333',
+        marginVertical: 15,
+    },
+    horizontalScrollView: {
+        marginVertical: 10,
+    },
+    labItem: {
+        width: 200,
+        padding: 15,
+        marginHorizontal: 5,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    labTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333333',
+    },
+    labDescription: {
+        fontSize: 14,
+        color: '#666666',
+        marginVertical: 4,
+    },
+    labPrice: {
+        fontSize: 14,
+        color: '#FF424E',
+        fontWeight: '600',
+        marginTop: 4,
+    },
+    labLink: {
+        fontSize: 14,
+        color: '#FF424E',
+        marginTop: 8,
+        textDecorationLine: 'underline',
+    },
+    noLabsText: {
+        fontSize: 14,
+        color: '#666666',
+        textAlign: 'center',
+        marginTop: 20,
+    },
     addToCartButton: {
         backgroundColor: '#FF6347',
         padding: 10,
@@ -263,4 +354,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Detaillabs;
+export default DetailCombo;

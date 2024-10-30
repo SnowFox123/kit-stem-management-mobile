@@ -218,7 +218,6 @@ const KitsScreen = () => {
                     keyExtractor={(item) => item._id}
                     renderItem={renderItem}
                     numColumns={2}
-                    contentContainerStyle={{ paddingBottom: 100 }}
                 />
             )}
         </View>
@@ -275,13 +274,14 @@ const styles = StyleSheet.create({
     card: {
         width: '48%',
         marginBottom: 10,
+        marginHorizontal: '1%', // Adjusts spacing between columns
         borderWidth: 1,
         borderColor: '#ddd',
         borderRadius: 10,
-        // padding: 10,
         position: 'relative',
         overflow: 'hidden',
     },
+    
     cardImage: {
         width: '100%',
         height: 150,
