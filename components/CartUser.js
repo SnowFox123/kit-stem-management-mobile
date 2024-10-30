@@ -14,8 +14,6 @@ const CartUser = () => {
     const [selectedItems, setSelectedItems] = useState(new Set());
     const [editMode, setEditMode] = useState(false);
     const navigation = useNavigation();
-
-    // Create a ref to manage Swipeable components
     const swipeableRefs = useRef(new Map());
 
     useEffect(() => {
@@ -36,16 +34,22 @@ const CartUser = () => {
                 pageSize: 10,
             },
         };
-    
+
         try {
             const response = await getCart(payload);
             const newItems = response.data?.pageData?.filter(item => item.status === 'new') || [];
-    
-            // Filter to keep only unique items based on `_id`
-            const uniqueItems = Array.from(
-                new Map(newItems.map(item => [item.product_id, item])).values()
-            );
-    
+
+            // Group items by product_id and calculate quantities
+            const groupedItems = newItems.reduce((acc, item) => {
+                if (!acc[item.product_id]) {
+                    acc[item.product_id] = { ...item, quantity: 0 }; // Initialize with item data
+                }
+                acc[item.product_id].quantity += 1; // Increment quantity
+                return acc;
+            }, {});
+
+            // Convert grouped items back to an array
+            const uniqueItems = Object.values(groupedItems);
             setCartItems(uniqueItems);
         } catch (error) {
             setError('Failed to load cart items.');
@@ -60,7 +64,18 @@ const CartUser = () => {
             setLoading(false);
         }
     };
-    
+
+    // Function to group items by product type
+    const groupItemsByType = () => {
+        return cartItems.reduce((acc, item) => {
+            const { product_type } = item;
+            if (!acc[product_type]) {
+                acc[product_type] = [];
+            }
+            acc[product_type].push(item);
+            return acc;
+        }, {});
+    };
 
     const toggleSelection = (id) => {
         const newSelectedItems = new Set(selectedItems);
@@ -74,7 +89,6 @@ const CartUser = () => {
 
     const selectAll = () => {
         closeAllSwipeables();
-
         if (selectedItems.size === cartItems.length) {
             setSelectedItems(new Set());
         } else {
@@ -108,7 +122,7 @@ const CartUser = () => {
         selectedItems.forEach(id => {
             const item = cartItems.find(cartItem => cartItem._id === id);
             if (item) {
-                total += item.price_paid || 0;
+                total += item.price_paid * item.quantity || 0; // Multiply by quantity
             }
         });
         return total.toFixed(2);
@@ -142,11 +156,9 @@ const CartUser = () => {
             <Swipeable
                 ref={ref => swipeableRefs.current.set(item._id, ref)} // Set the reference for this Swipeable
                 renderRightActions={rightSwipeActions}
-            // onSwipeableOpen={closeSwipeable} // Close when opened
             >
                 <TouchableOpacity
                     onPress={() => {
-                        // toggleSelection(item._id);
                         navigation.navigate('Detailkits', { kitId: item._id });
                         closeSwipeable(); // Close swipeable when interacting with the item
                     }}
@@ -165,13 +177,14 @@ const CartUser = () => {
                     <View style={styles.itemTextContainer}>
                         <Text style={styles.itemName}>{item.product_name}</Text>
                         <View style={styles.priceContainer}>
-                            <Text style={styles.finalPrice}>${item.price_paid ? item.price_paid.toFixed(2) : 'N/A'}</Text>
-                            <Text style={styles.originalPrice}>${item.price ? item.price.toFixed(2) : 'N/A'}</Text>
+                            <Text style={styles.finalPrice}>${(item.price_paid * item.quantity).toFixed(2)}</Text>
+                            <Text style={styles.originalPrice}>${item.price.toFixed(2)}</Text>
                             <Text style={styles.discount}>
                                 <Text style={{ color: 'red' }}>{item.discount ? item.discount * 100 : 0}%</Text>
                             </Text>
                         </View>
-                        <Text style={styles.itemName}>Quantity</Text>
+                        <Text>Type {item.product_type}</Text>
+                        <Text style={styles.quantity}>Quantity: {item.quantity}</Text>
                     </View>
                 </TouchableOpacity>
             </Swipeable>
@@ -186,6 +199,8 @@ const CartUser = () => {
     };
 
     if (loading) return <ActivityIndicator style={styles.loadingContainer} size="large" color="#FF6347" />;
+
+    const groupedItems = groupItemsByType();
 
     return (
         <SafeAreaView style={styles.container}>
@@ -212,18 +227,23 @@ const CartUser = () => {
                 </TouchableOpacity>
             </View>
 
-            {cartItems.length > 0 ? (
+            {Object.keys(groupedItems).length > 0 ? (
                 <FlatList
-                    style={{ padding: 20 }}
-                    data={cartItems}
-                    renderItem={renderCartItem}
-                    keyExtractor={(item) => item._id}
-                    contentContainerStyle={styles.listContent}
+                    data={Object.keys(groupedItems)} // Use the keys (product types) as data
+                    renderItem={({ item: productType }) => (
+                        <View>
+                            <Text style={styles.sectionHeader}>{productType}</Text>
+                            <FlatList
+                                data={groupedItems[productType]}
+                                renderItem={renderCartItem}
+                                keyExtractor={(item) => item._id}
+                            />
+                        </View>
+                    )}
+                    keyExtractor={(item) => item}
                 />
             ) : (
-                <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>Your cart is empty.</Text>
-                </View>
+                <Text style={styles.emptyCart}>Your cart is empty.</Text>
             )}
 
             <View style={styles.totalContainer}>
@@ -249,8 +269,6 @@ const CartUser = () => {
                     </TouchableOpacity>
                 )}
             </View>
-
-            <Toast />
         </SafeAreaView>
     );
 };
@@ -275,6 +293,11 @@ const styles = StyleSheet.create({
     },
     headerButton: {
         padding: 10,
+    },
+    sectionHeader: {
+        padding: 10,
+        fontSize: 18,
+        fontWeight: 'bold'
     },
     buttonBar: {
         flexDirection: 'row',
@@ -424,3 +447,6 @@ const styles = StyleSheet.create({
 });
 
 export default CartUser;
+
+
+

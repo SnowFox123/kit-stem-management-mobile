@@ -42,7 +42,14 @@ const HomeStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
-
+    <Stack.Screen
+      name="DetailCombo"
+      component={DetailCombo}
+      options={{
+        title: "Combo Detail",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
     <Stack.Screen
       name="Login"
       component={LoginScreen}
@@ -147,7 +154,7 @@ const KitsStack = () => (
         headerShown: false,
       }}
     />
-     <Stack.Screen
+    <Stack.Screen
       name="Detaillabs"
       component={Detaillabs}
       options={{
