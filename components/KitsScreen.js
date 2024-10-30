@@ -122,10 +122,6 @@ const KitsScreen = () => {
                 <View style={{ padding: 10 }}>
                     <Text style={styles.artName} numberOfLines={2}>{item.name}</Text>
 
-                    <View style={styles.ratingContainer}>
-                        <Icon name="star" size={14} color="#FFD700" />
-                        <Text style={styles.averageRating}>sao</Text>
-                    </View>
 
                     <View style={styles.priceGroup}>
                         <Text style={styles.price}>${discountedPrice}</Text>

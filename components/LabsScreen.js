@@ -103,8 +103,13 @@ const LabsScreen = () => {
                 onPress={() => navigation.navigate('Detaillabs', { kitId: item._id })}
                 style={styles.card}
             >
-                <Image
+                {/* <Image
                     source={{ uri: item.lab_url }}
+                    style={styles.cardImage}
+                    resizeMode="contain"
+                /> */}
+                <Image
+                    source={require('../assets/LAB-1.jpg')}
                     style={styles.cardImage}
                     resizeMode="contain"
                 />
@@ -116,13 +121,13 @@ const LabsScreen = () => {
                     />
                 </TouchableOpacity>
 
-                <View style={{padding: 10}}>
+                <View style={{ padding: 10 }}>
                     <Text style={styles.artName} numberOfLines={2}>{item.name}</Text>
                     <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
-                    <View style={styles.ratingContainer}>
+                    {/* <View style={styles.ratingContainer}>
                         <Icon name="star" size={14} color="#FFD700" />
                         <Text style={styles.averageRating}>Rating: {item.rating || 'N/A'}</Text>
-                    </View>
+                    </View> */}
                     <View style={styles.priceGroup}>
                         <Text style={styles.price}>${discountedPrice}</Text>
                         {item.discount > 0 && (
@@ -131,7 +136,7 @@ const LabsScreen = () => {
                     </View>
                     <View style={styles.categorySoldContainer}>
                         <Text style={styles.brand}>{item.category_name}</Text>
-                        <Text style={styles.soldText}>Support: {item.max_support_count || ''}</Text>
+                        <Text style={styles.soldText}>Max Support: {item.max_support_count || ''}</Text>
                     </View>
                 </View>
 

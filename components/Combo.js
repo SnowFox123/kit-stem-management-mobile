@@ -110,7 +110,7 @@ const Combo = () => {
                 style={styles.card}
             >
                 <Image
-                    source={{ uri: item.image_url }}
+                    source={{ uri: item.image_url || 'https://www.crunchlabs.com/cdn/shop/products/build-box-builds-stack_921810d0-dbfc-4836-9d38-9cf4b7843a4e.jpg?v=1703095056'}}
                     style={styles.cardImage}
                     resizeMode="contain"
                 />

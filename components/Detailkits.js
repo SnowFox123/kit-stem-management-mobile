@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, Image, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import { useNavigation } from '@react-navigation/native';
-import { getKitByID, addToCart, getUserDetail } from '../service/UserServices'; // Ensure you import getUserDetail
+import { getKitByID, addToCart, getUserDetail } from '../service/UserServices';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StarRating from './StarRating';
 
@@ -14,7 +14,9 @@ const Detailkits = ({ route }) => {
     const { kitId } = route.params;
     const [kit, setKit] = useState(null);
     const [favorites, setFavorites] = useState([]);
-    const [users, setUsers] = useState({}); // State to hold user details
+    const [users, setUsers] = useState({});
+    const [selectedRating, setSelectedRating] = useState(null);
+    const scrollRef = useRef(); // Scroll reference for auto-scroll
 
     useEffect(() => {
         fetchKitDetails();
@@ -41,29 +43,27 @@ const Detailkits = ({ route }) => {
         }
     };
 
-    // Function to fetch user details for each review
     const fetchUserDetails = async (reviews) => {
         const userPromises = reviews.map(async (review) => {
             if (review.user_id) {
                 try {
                     const userResponse = await getUserDetail(review.user_id);
-                    return { userId: review.user_id, userName: userResponse.data.name }; // Adjust based on your API response structure
+                    return { userId: review.user_id, userName: userResponse.data.name };
                 } catch (error) {
                     console.error("Error fetching user details: ", error);
-                    return { userId: review.user_id, userName: "Unknown User" }; // Fallback for error
+                    return { userId: review.user_id, userName: "Unknown User" };
                 }
             }
-            return { userId: review.user_id, userName: "Unknown User" }; // Fallback if no user_id
+            return { userId: review.user_id, userName: "Unknown User" };
         });
 
-        // Wait for all user detail promises to resolve
         const userDetails = await Promise.all(userPromises);
         const userMap = userDetails.reduce((acc, { userId, userName }) => {
             acc[userId] = userName;
             return acc;
         }, {});
 
-        setUsers(userMap); // Set the user details in the state
+        setUsers(userMap);
     };
 
     const loadFavorites = async () => {
@@ -126,6 +126,15 @@ const Detailkits = ({ route }) => {
         return price * (1 - discount);
     };
 
+    const handleRatingFilter = (rating) => {
+        setSelectedRating(rating === selectedRating ? null : rating);
+        scrollRef.current?.scrollTo({ y: 700, animated: true });
+    };
+
+    const filteredReviews = selectedRating
+        ? kit?.reviews?.filter(review => review.rating === selectedRating) || []
+        : kit?.reviews || [];
+
     if (!kit) {
         return (
             <View style={styles.loadingContainer}>
@@ -136,7 +145,6 @@ const Detailkits = ({ route }) => {
     }
 
     const availableLabs = kit?.labs?.filter(lab => !lab.is_deleted) || [];
-    const reviews = kit.reviews || [];
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -152,7 +160,7 @@ const Detailkits = ({ route }) => {
                 </View>
 
                 <View style={styles.contentContainer}>
-                    <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <ScrollView contentContainerStyle={styles.scrollContainer} ref={scrollRef}>
                         <View style={styles.imageContainer}>
                             <Image source={{ uri: kit.image_url }} style={styles.image} resizeMode="contain" />
                             <TouchableOpacity onPress={() => toggleFavorite(kit._id)} style={styles.favoriteIcon}>
@@ -172,31 +180,37 @@ const Detailkits = ({ route }) => {
                             <Text style={styles.descriptionTitle}>Description:</Text>
                             <Text style={styles.description}>{kit.description || "No description available."}</Text>
 
-                            {/* Recommended Labs Section */}
-                            <Text style={styles.labsTitle}>Recommended Labs:</Text>
+                            {/* Star Rating Filter */}
+                            <Text style={styles.filterTitle}>Filter by Rating:</Text>
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScrollView}>
-                                {availableLabs.length > 0 ? (
-                                    availableLabs.map((lab) => (
-                                        <View key={lab._id}  style={styles.labItem}>
-                                             <TouchableOpacity onPress={() => navigation.navigate('Detaillab', { kitId: lab._id })} >
-                                            <Text style={styles.labTitle}>{lab.name}</Text>
-                                            <Text style={styles.labDescription}>{lab.description}</Text>
-                                            <Text style={styles.labPrice}>Price: ${lab.price.toFixed(2)}</Text>
-                                           
-                                                <Text style={styles.labLink}>View Lab Details</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    ))
-                                ) : (
-                                    <Text style={styles.noLabsText}>No available labs.</Text>
-                                )}
+                                <TouchableOpacity
+                                    style={[
+                                        styles.ratingButton,
+                                        selectedRating === null && styles.selectedRatingButton
+                                    ]}
+                                    onPress={() => handleRatingFilter(null)}
+                                >
+                                    <Text style={styles.ratingButtonText}>All Stars</Text>
+                                </TouchableOpacity>
+                                {[1, 2, 3, 4, 5].map(star => (
+                                    <TouchableOpacity
+                                        key={star}
+                                        style={[
+                                            styles.ratingButton,
+                                            selectedRating === star && styles.selectedRatingButton
+                                        ]}
+                                        onPress={() => handleRatingFilter(star)}
+                                    >
+                                        <Text style={styles.ratingButtonText}>{star} Star</Text>
+                                    </TouchableOpacity>
+                                ))}
                             </ScrollView>
 
                             {/* Reviews Section */}
                             <View style={styles.reviewContainerFull}>
                                 <Text style={styles.reviewsTitle}>Reviews:</Text>
-                                {reviews.length > 0 ? (
-                                    reviews.map((review) => (
+                                {filteredReviews.length > 0 ? (
+                                    filteredReviews.map((review) => (
                                         <View key={review._id} style={styles.reviewContainer}>
                                             <Text style={styles.reviewComment}>Author: {users[review.user_id] || "Unknown User"}</Text>
                                             <StarRating rating={review.rating} />
@@ -209,11 +223,11 @@ const Detailkits = ({ route }) => {
                             </View>
                         </View>
                     </ScrollView>
-                </View>
 
-                <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
-                    <Text style={styles.addToCartText}>Add to Cart</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
+                        <Text style={styles.addToCartText}>Add to Cart</Text>
+                    </TouchableOpacity>
+                </View>
             </SafeAreaView>
         </GestureHandlerRootView>
     );
@@ -289,19 +303,24 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     originalPrice: {
+        fontSize: 18,
+        color: '#ccc',
         textDecorationLine: 'line-through',
-        color: '#888888',
-        marginLeft: 8,
+        marginHorizontal: 8,
     },
     finalPrice: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#FF6347',
+        color: 'rgb(0, 110, 173)',
     },
     discount: {
-        color: '#FF6347',
+        fontSize: 18,
+        color: '#FF424E',
         fontWeight: 'bold',
-        marginLeft: 8,
+        backgroundColor: '#FFD700',
+        paddingHorizontal: 10,
+        paddingVertical: 1,
+        alignSelf: 'center',
     },
     category: {
         fontSize: 16,
@@ -397,7 +416,7 @@ const styles = StyleSheet.create({
     },
     addToCartButton: {
         backgroundColor: '#FF6347',
-        padding: 15,
+        padding: 10,
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 5,
@@ -411,6 +430,30 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontWeight: 'bold',
         fontSize: 18,
+    },
+    filterTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+        marginTop: 15,
+    },
+    horizontalScrollView: {
+        marginTop: 10,
+        marginBottom: 20,
+    },
+    ratingButton: {
+        padding: 10,
+        marginRight: 10,
+        backgroundColor: '#eee',
+        borderRadius: 5,
+        color: "#fff"
+    },
+    selectedRatingButton: {
+        backgroundColor: 'green',
+    },
+    ratingButtonText: {
+        fontSize: 14,
+        color: "#fff"
     },
 });
 

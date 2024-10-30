@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, Image, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,6 +11,10 @@ const Detaillabs = ({ route, navigation }) => {
     const { kitId } = route.params;
     const [kit, setKit] = useState(null);
     const [favorites, setFavorites] = useState([]);
+    const [users, setUsers] = useState({});
+    const [selectedRating, setSelectedRating] = useState(null);
+    const scrollRef = useRef(); // Scroll reference for auto-scroll
+
 
     useEffect(() => {
         fetchLabDetails();
@@ -26,6 +30,29 @@ const Detaillabs = ({ route, navigation }) => {
         } catch (error) {
             console.error("Error fetching lab details: ", error);
         }
+    };
+
+    const fetchUserDetails = async (reviews) => {
+        const userPromises = reviews.map(async (review) => {
+            if (review.user_id) {
+                try {
+                    const userResponse = await getUserDetail(review.user_id);
+                    return { userId: review.user_id, userName: userResponse.data.name };
+                } catch (error) {
+                    console.error("Error fetching user details: ", error);
+                    return { userId: review.user_id, userName: "Unknown User" };
+                }
+            }
+            return { userId: review.user_id, userName: "Unknown User" };
+        });
+
+        const userDetails = await Promise.all(userPromises);
+        const userMap = userDetails.reduce((acc, { userId, userName }) => {
+            acc[userId] = userName;
+            return acc;
+        }, {});
+
+        setUsers(userMap);
     };
 
     const loadFavorites = async () => {
@@ -88,6 +115,15 @@ const Detaillabs = ({ route, navigation }) => {
         return price * (1 - discount / 100);
     };
 
+    const handleRatingFilter = (rating) => {
+        setSelectedRating(rating === selectedRating ? null : rating);
+        scrollRef.current?.scrollTo({ y: 700, animated: true });
+    };
+
+    const filteredReviews = selectedRating
+        ? kit?.reviews?.filter(review => review.rating === selectedRating) || []
+        : kit?.reviews || [];
+
     if (!kit) {
         return (
             <View style={styles.loadingContainer}>
@@ -96,12 +132,11 @@ const Detaillabs = ({ route, navigation }) => {
             </View>
         );
     }
+    const reviews = kit.reviews || [];
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={styles.container}>
-
-            <View style={styles.container}>
+            <SafeAreaView style={styles.container}>
                 {/* Header */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
@@ -113,34 +148,85 @@ const Detaillabs = ({ route, navigation }) => {
                     </TouchableOpacity>
                 </View>
 
-                <ScrollView contentContainerStyle={styles.scrollContainer}>
-                    <View style={styles.imageContainer}>
-                        <Image source={{ uri: kit.lab_url }} style={styles.image} resizeMode="contain" />
-                        <TouchableOpacity onPress={() => toggleFavorite(kit._id)} style={styles.favoriteIcon}>
-                            <Icon name={favorites.includes(kit._id) ? 'heart' : 'heart-o'} size={24} color="red" />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.detailsContainer}>
-                        <Text style={styles.title}>{kit.name}</Text>
-                        <View style={styles.priceContainer}>
-                            <Text style={styles.finalPrice}>
-                                ${newPriceAfterDiscount(kit.price, kit.discount).toFixed(2)}
-                            </Text>
-                            <Text style={styles.originalPrice}>${kit.price.toFixed(2)}</Text>
-                            <Text style={styles.discount}>-{kit.discount}%</Text>
-                        </View>
-                        <Text style={styles.category}>{kit.category_name}</Text>
-                        <Text style={styles.descriptionTitle}>Description:</Text>
-                        <Text style={styles.description}>{kit.description}</Text>
-                    </View>
-                </ScrollView>
+                <View style={styles.contentContainer}>
 
-                <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
-                    <Text style={styles.addToCartText}>Add to Cart</Text>
-                </TouchableOpacity>
-            </View>
-            </SafeAreaView>
-        </GestureHandlerRootView>
+                    <ScrollView contentContainerStyle={styles.scrollContainer}>
+                        <View style={styles.imageContainer}>
+                            <Image
+                                source={require('../assets/LAB-1.jpg')}
+                                style={styles.image}
+                                resizeMode="contain"
+                            />
+
+
+                            <TouchableOpacity onPress={() => toggleFavorite(kit._id)} style={styles.favoriteIcon}>
+                                <Icon name={favorites.includes(kit._id) ? 'heart' : 'heart-o'} size={24} color="red" />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.detailsContainer}>
+                            <Text style={styles.title}>{kit.name}</Text>
+                            <View style={styles.priceContainer}>
+                                <Text style={styles.finalPrice}>
+                                    ${newPriceAfterDiscount(kit.price, kit.discount).toFixed(2)}
+                                </Text>
+                                <Text style={styles.originalPrice}>${kit.price.toFixed(2)}</Text>
+                                <Text style={styles.discount}>-{kit.discount}%</Text>
+                            </View>
+                            <Text style={styles.category}>{kit.category_name}</Text>
+                            <Text style={styles.descriptionTitle}>Description:</Text>
+                            <Text style={styles.description}>{kit.description}</Text>
+                        </View>
+                        {/* Star Rating Filter */}
+                        <Text style={styles.filterTitle}>Filter by Rating:</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScrollView}>
+                            <TouchableOpacity
+                                style={[
+                                    styles.ratingButton,
+                                    selectedRating === null && styles.selectedRatingButton
+                                ]}
+                                onPress={() => handleRatingFilter(null)}
+                            >
+                                <Text style={styles.ratingButtonText}>All Stars</Text>
+                            </TouchableOpacity>
+                            {[1, 2, 3, 4, 5].map(star => (
+                                <TouchableOpacity
+                                    key={star}
+                                    style={[
+                                        styles.ratingButton,
+                                        selectedRating === star && styles.selectedRatingButton
+                                    ]}
+                                    onPress={() => handleRatingFilter(star)}
+                                >
+                                    <Text style={styles.ratingButtonText}>{star} Star</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+
+                        {/* Reviews Section */}
+                        <View style={styles.reviewContainerFull}>
+                            <Text style={styles.reviewsTitle}>Reviews:</Text>
+                            {filteredReviews.length > 0 ? (
+                                filteredReviews.map((review) => (
+                                    <View key={review._id} style={styles.reviewContainer}>
+                                        <Text style={styles.reviewComment}>Author: {users[review.user_id] || "Unknown User"}</Text>
+                                        <StarRating rating={review.rating} />
+                                        <Text style={styles.reviewComment}>{review.comment || "No comment."}</Text>
+                                    </View>
+                                ))
+                            ) : (
+                                <Text style={styles.noReviewsText}>No reviews available.</Text>
+                            )}
+                        </View>
+
+                    </ScrollView>
+
+                    <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
+                        <Text style={styles.addToCartText}>Add to Cart</Text>
+                    </TouchableOpacity>
+
+                </View>
+            </SafeAreaView >
+        </GestureHandlerRootView >
     );
 };
 
@@ -161,11 +247,8 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     container: {
-        flexGrow: 1,
+        flex: 1,
         backgroundColor: '#FFFFFF',
-    },
-    scrollContainer: {
-        flexGrow: 1,
     },
     loadingContainer: {
         flex: 1,
@@ -178,13 +261,20 @@ const styles = StyleSheet.create({
         color: '#666666',
         marginTop: 10,
     },
+    contentContainer: {
+        flex: 1,
+    },
+    scrollContainer: {
+        flexGrow: 1,
+        backgroundColor: '#FFFFFF',
+    },
     imageContainer: {
         position: 'relative',
     },
     image: {
         width: '100%',
         height: 300,
-        resizeMode: 'cover',
+        resizeMode: 'contain',
     },
     favoriteIcon: {
         position: 'absolute',
@@ -216,8 +306,8 @@ const styles = StyleSheet.create({
         marginHorizontal: 8,
     },
     finalPrice: {
-        fontSize: 24,
-        fontWeight: '700',
+        fontSize: 20,
+        fontWeight: 'bold',
         color: 'rgb(0, 110, 173)',
     },
     discount: {
@@ -231,35 +321,135 @@ const styles = StyleSheet.create({
     },
     category: {
         fontSize: 16,
-        color: 'rgb(0, 110, 173)',
-        marginVertical: 4,
+        color: '#555555',
+        marginBottom: 8,
     },
     descriptionTitle: {
         fontSize: 18,
-        fontWeight: '500',
-        marginVertical: 10,
-        color: '#333333',
+        fontWeight: 'bold',
+        marginVertical: 8,
     },
     description: {
+        fontSize: 16,
+        color: '#333333',
+        marginBottom: 16,
+    },
+    labsTitle: {
         fontSize: 18,
-        color: '#666666',
-        lineHeight: 22,
+        fontWeight: 'bold',
+        marginVertical: 8,
+    },
+    horizontalScrollView: {
+        marginBottom: 16,
+    },
+    labItem: {
+        width: 200,
+        marginRight: 16,
+        padding: 10,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    labTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333333',
+    },
+    labDescription: {
+        fontSize: 14,
+        color: '#555555',
+        marginVertical: 4,
+    },
+    labPrice: {
+        fontSize: 14,
+        color: '#FF6347',
+        marginVertical: 4,
+    },
+    labLink: {
+        fontSize: 14,
+        color: '#007BFF',
+        textDecorationLine: 'underline',
+    },
+    noLabsText: {
+        fontSize: 14,
+        color: '#FF6347',
+        textAlign: 'center',
+    },
+    reviewsTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginVertical: 8,
+    },
+    reviewContainer: {
+        padding: 10,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+        marginBottom: 8,
+    },
+    reviewContainerFull: {
+        paddingBottom: 50
+    },
+    reviewComment: {
+        fontSize: 14,
+        color: '#333333',
+        padding: 5
+    },
+    reviewRating: {
+        fontSize: 12,
+        color: '#888888',
+        marginTop: 4,
+    },
+    noReviewsText: {
+        fontSize: 14,
+        color: '#FF6347',
+        textAlign: 'center',
     },
     addToCartButton: {
         backgroundColor: '#FF6347',
         padding: 10,
-        borderRadius: 8,
         alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 5,
+        margin: 16,
         position: 'absolute',
-        bottom: 20,
-        left: 20,
-        right: 20,
-        zIndex: 100,
+        bottom: 0,
+        left: 0,
+        right: 0,
     },
     addToCartText: {
         color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 18,
+    },
+    filterTitle: {
         fontSize: 18,
         fontWeight: 'bold',
+        color: '#333',
+        marginTop: 15,
+    },
+    horizontalScrollView: {
+        marginTop: 10,
+        marginBottom: 20,
+    },
+    ratingButton: {
+        padding: 10,
+        marginRight: 10,
+        backgroundColor: '#eee',
+        borderRadius: 5,
+    },
+    selectedRatingButton: {
+        backgroundColor: 'green',
+    },
+    ratingButtonText: {
+        fontSize: 14,
+        color: "#fff"
     },
 });
 
