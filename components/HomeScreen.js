@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Import icons from FontAwesome
@@ -10,11 +10,16 @@ import { getAllCategories } from '../service/categoryService';
 import Tag from './component/tag';
 import { getKit } from '../service/UserServices';
 
+
+
 const HomeScreen = () => {
     const navigation = useNavigation();
     const [blogs, setBlogs] = useState([]);
     const [categories, setCategories] = useState([]);
     const [kit, setKit] = useState([]);
+    const [popularKits, setPopularKits] = useState([]);
+    const background = require('../assets/be7b1af6feaa4d6eb03070ed50b26c29.mp4');
+
 
     const fetchCategories = async () => {
         try {
@@ -40,7 +45,7 @@ const HomeScreen = () => {
                     },
                     pageInfo: {
                         pageNum: 1,
-                        pageSize: 2
+                        pageSize: 10
                     }
                 });
             console.log(response);
@@ -71,73 +76,98 @@ const HomeScreen = () => {
     }, []);
 
     return (
-        <SafeAreaView style={styles.container}>
+        <ScrollView style={styles.container}>
             <View style={styles.header}>
                 <Image
-                    source={{ uri: 'https://s3-eu-west-1.amazonaws.com/tpd/logos/63517e79bdf94bc8daa1bf18/0x0.png' }} // Replace with your logo URL
+                    source={{ uri: 'https://s3-eu-west-1.amazonaws.com/tpd/logos/63517e79bdf94bc8daa1bf18/0x0.png' }}
                     style={styles.logo}
                     resizeMode="contain"
                 />
                 <View style={styles.iconContainer}>
                     <TouchableOpacity
                         style={styles.icon}
-                        onPress={() => navigation.navigate('Login')} // Navigate to Login on press
+                        onPress={() => navigation.navigate('Login')}
                     >
                         <Icon name="user" size={30} color="#000" />
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.icon}
-                        onPress={() => navigation.navigate('Cart')} // Navigate to Cart on press
+                        onPress={() => navigation.navigate('Cart')}
                     >
                         <Icon name="shopping-cart" size={30} color="#000" />
                     </TouchableOpacity>
                 </View>
             </View>
-            {/* Main content goes here */}
 
-
-            {/* Featured Kits */}
-            <Text style={{ marginTop: 20, fontSize: 21, alignSelf: 'center', fontWeight: '600' }}>Featured STEM Kits</Text>
-            {/* Kit name, description, level, image, start, detail button */}
-            <ScrollView horizontal={true} contentContainerStyle={styles.recommendedKits} showsHorizontalScrollIndicator={false}>
-                {kit.map((kit) => (
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('Detailkits', { kitId: kit._id })}
-                        style={styles.card}
-                        key={kit._id}
-                    >
-                        {/* card image */}
-                        <Image
-                            source={{ uri: kit.image_url }}
-                            style={styles.cardImage}
-                            resizeMode="cover"
-                        />
-                        {/* end card image */}
-                        <View style={{ padding: 10 }}>
-                            {/* kit name */}
-                            <Text style={styles.cardContent} numberOfLines={2}>{kit.name}</Text>
-
-                            <View style={styles.cardRating}>
-                                <Icon name="star" size={24} color="#FFD700" />
-                                <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 6 }}>sao</Text>
-                            </View>
-                            {/* end kit name */}
-                            <View style={styles.cardCategory}>
+            {/* Featured STEM Kits */}
+            <View style={styles.featuredSection}>
+                <Text style={styles.sectionTitle}>Featured STEM Kits</Text>
+                <ScrollView horizontal contentContainerStyle={styles.recommendedKits} showsHorizontalScrollIndicator={false}>
+                    {kit.splice(0, 2).map((kit) => (
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('Detailkits', { kitId: kit._id })}
+                            style={styles.card}
+                            key={kit._id}
+                        >
+                            <Image
+                                source={{ uri: kit.image_url }}
+                                style={styles.cardImage}
+                                resizeMode="cover"
+                            />
+                            <View style={{ padding: 10 }}>
+                                <Text style={styles.cardContent} numberOfLines={2}>{kit.name}</Text>
+                                <View style={styles.cardRating}>
+                                    <Icon name="star" size={24} color="#FFD700" />
+                                    <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 6 }}>sao</Text>
+                                </View>
                                 <Text style={styles.cardCategory}>{kit.category_name}</Text>
                             </View>
-                        </View>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            </View>
 
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
+            {/* Categories Section */}
+            <View style={styles.categorySection}>
+                <Text style={styles.sectionTitle}>Categories</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryContainer}>
+                    {categories.map((category) => (
+                        <Tag name={category.name} key={category._id} />
+                    ))}
+                </ScrollView>
+            </View>
 
-            {/* End Featured Kits */}
+            <View style={styles.featuredSection}>
+                <Text style={styles.sectionTitle}>New Kits & Popular Kits</Text>
+                <ScrollView horizontal contentContainerStyle={styles.recommendedKits} showsHorizontalScrollIndicator={false}>
+                    {kit.splice(0, 6).map((kit) => (
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('Detailkits', { kitId: kit._id })}
+                            style={styles.card}
+                            key={kit._id}
+                        >
+                            <Image
+                                source={{ uri: kit.image_url }}
+                                style={styles.cardImage}
+                                resizeMode="cover"
+                            />
+                            <View style={{ padding: 10 }}>
+                                <Text style={styles.cardContent} numberOfLines={2}>{kit.name}</Text>
+                                <View style={styles.cardRating}>
+                                    <Icon name="star" size={24} color="#FFD700" />
+                                    <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 6 }}>sao</Text>
+                                </View>
+                                <Text style={styles.cardCategory}>{kit.category_name}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            </View>
 
 
-
-            {/* Our BLogs */}
-            <Text style={{ fontSize: 24, textAlign: 'center', fontWeight: '700' }}>Our Blogs</Text>
-            <ScrollView horizontal={true} contentContainerStyle={styles.scrollViewStyle} showsHorizontalScrollIndicator={false}>
+            {/* Our Blogs */}
+            <Text style={styles.blogSectionTitle}>Our Blogs</Text>
+            <ScrollView horizontal contentContainerStyle={styles.scrollViewStyle} showsHorizontalScrollIndicator={false}>
                 {blogs.length > 0 ? (
                     blogs.map((blog) => (
                         <BlogCard
@@ -154,15 +184,14 @@ const HomeScreen = () => {
                     <Text>No blogs available.</Text>
                 )}
             </ScrollView>
-            {/* End Our BLogs */}
-        </SafeAreaView>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         backgroundColor: '#fff',
+        paddingVertical: 20,
     },
     header: {
         flexDirection: 'row',
@@ -172,9 +201,13 @@ const styles = StyleSheet.create({
         paddingBottom: 30,
         backgroundColor: '#fff',
     },
+    logo: {
+        width: 200,
+        height: 100,
+        alignSelf: 'center',
+    },
     iconContainer: {
         flexDirection: 'row',
-        alignItems: 'center',
         position: 'absolute',
         right: 16,
     },
@@ -182,34 +215,19 @@ const styles = StyleSheet.create({
         marginLeft: 16,
         fontSize: 20,
     },
-    logo: {
-        width: 200,
-        height: 100,
+    sectionTitle: {
+        fontSize: 21,
+        fontWeight: '600',
         alignSelf: 'center',
-        justifyContent: 'center',
-        position: 'absolute',
-        left: '50%',
-        transform: [{ translateX: -100 }],
+        marginVertical: 10,
     },
-    content: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    welcomeText: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    scrollViewStyle: {
-        paddingHorizontal: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 20,
-        height: 400,
+    featuredSection: {
+        backgroundColor: '#fff',
+        // paddingVertical: 10,
+        marginBottom: 20,
     },
     recommendedKits: {
         paddingHorizontal: 10,
-        paddingVertical: 10,
     },
     card: {
         width: 250,
@@ -227,19 +245,38 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 10,
         borderTopRightRadius: 10,
     },
-    cardTitle: {
+    cardContent: {
         fontSize: 16,
         fontWeight: '600',
-        marginBottom: 6,
-    },
-    cardCategory: {
-        fontSize: 14,
-        fontWeight: '500',
     },
     cardRating: {
         flexDirection: 'row',
         alignItems: 'center',
         marginVertical: 5,
+    },
+    cardCategory: {
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    categorySection: {
+        marginBottom: 20,
+    },
+    categoryContainer: {
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+    },
+    scrollViewStyle: {
+        paddingHorizontal: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 20,
+        paddingBottom: 60,
+    },
+    blogSectionTitle: {
+        fontSize: 24,
+        textAlign: 'center',
+        fontWeight: '700',
+        marginBottom: 10,
     },
 });
 
