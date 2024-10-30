@@ -36,6 +36,18 @@ export const getCombo = async (payload) => {
     }
 };
 
+export const getUserDetail = async (id) => {
+    try {
+        const response = await axiosInstance.get(`/users/${id}`);
+
+        // console.log(response)
+        return response; // The interceptor returns only the data, so this is equivalent to returning response.data
+    } catch (error) {
+        console.error("Error fetching data: ", error);
+        throw error; // Throw the error for handling in the component
+    }
+};
+
 
 export const getKitByID = async (id) => {
     try {

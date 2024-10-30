@@ -61,15 +61,6 @@ const HomeStack = () => (
       }}
     />
     <Stack.Screen
-      name="Detailkits"
-      component={Detailkits}
-      options={{
-        title: "Kit Detail",
-        headerTitleStyle: styles.headerTitle,
-        headerShown: false,
-      }}
-    />
-    <Stack.Screen
       name="Detaillabs"
       component={Detaillabs}
       options={{
@@ -152,6 +143,15 @@ const KitsStack = () => (
       component={Detailkits}
       options={{
         title: "Kit Detail",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+      }}
+    />
+     <Stack.Screen
+      name="Detaillabs"
+      component={Detaillabs}
+      options={{
+        title: "Lab Detail",
         headerTitleStyle: styles.headerTitle,
         headerShown: false,
       }}
@@ -273,7 +273,7 @@ const App = () => {
             console.log(route.name)
             const routeName = route.name;
 
-            console.log("🚀 ~ App ~ routeName:", routeName)
+            // console.log("🚀 ~ App ~ routeName:", routeName)
             // Hide bottom tab bar on specific screens
             if (["Detailkits", "Detaillabs"].includes(routeName)) {
               return { display: "none" };
