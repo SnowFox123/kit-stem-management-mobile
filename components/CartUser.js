@@ -173,7 +173,13 @@ const CartUser = () => {
                             />
                         </TouchableOpacity>
                     </View>
-                    <Image source={{ uri: item.product_image }} style={styles.itemImage} />
+                    <Image
+                        source={item.product_image ? { uri: item.product_image } : require('../assets/LAB-1.jpg')}
+                        style={styles.itemImage}
+                        resizeMode="contain"
+                    />
+
+
                     <View style={styles.itemTextContainer}>
                         <Text style={styles.itemName}>{item.product_name}</Text>
                         <View style={styles.priceContainer}>
@@ -183,7 +189,7 @@ const CartUser = () => {
                                 <Text style={{ color: 'red' }}>{item.discount ? item.discount * 100 : 0}%</Text>
                             </Text>
                         </View>
-                        <Text>Type {item.product_type}</Text>
+                        {/* <Text>Type {item.product_type}</Text> */}
                         <Text style={styles.quantity}>Quantity: {item.quantity}</Text>
                     </View>
                 </TouchableOpacity>
@@ -417,6 +423,11 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         alignItems: 'center',
         paddingHorizontal: 20,
+    },
+    image: {
+        width: '100%',
+        height: 300,
+        resizeMode: 'contain',
     },
     paymentButtonText: {
         color: '#FFFFFF',
