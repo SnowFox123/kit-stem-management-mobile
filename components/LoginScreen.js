@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Alert, Button, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, Button, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { axiosInstance } from '../service/customize-axios';
 import Toast from 'react-native-toast-message';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -12,11 +12,6 @@ function LoginScreen() {
 	const [password, setPassword] = useState('');
 	const [errorMessage, setErrorMessage] = useState('');
 	const navigate = useNavigation();
-	const [name, setName] = useState('');
-	const [description, setDescription] = useState('');
-	const [phoneNumber, setPhoneNumber] = useState('');
-	const [role, setRole] = useState('customer');
-	const [isRegister, setIsRegister] = useState(false);
 
 	const handleGetCurrentUser = async () => {
 		console.log('Get current user');
@@ -56,7 +51,7 @@ function LoginScreen() {
 		}
 
 		const loginPayload = {
-			email: email.trim(), // Ensure there are no extra spaces
+			email: email.trim(),
 			password: password.trim(),
 		};
 
@@ -90,133 +85,44 @@ function LoginScreen() {
 		}
 	};
 
-	const handleRegister = async () => {
-		setErrorMessage('');
-
-		// Basic form validation
-		if (!name || !password || !email || !phoneNumber) {
-			setErrorMessage('Please fill in all fields.');
-			return;
-		}
-
-		const registerPayload = {
-			name: name.trim(),
-			password: password.trim(),
-			email: email.trim(),
-			description: description.trim(),
-			phone_number: phoneNumber.trim(),
-			role: role.trim(),
-		};
-
-		try {
-			const response = await axiosInstance.post('/users/register', registerPayload);
-			console.log("Register Response:", response);
-
-			if (response.data) {
-				Toast.show({
-					type: 'success',
-					text1: 'Registration Successful',
-					text2: 'Welcome to Kitlab!'
-				});
-				navigate.navigate('HomeScreen');
-			} else {
-				setErrorMessage(response.data.message || 'Registration failed. Please try again.');
-			}
-		} catch (error) {
-			console.error('Register error', error);
-			setErrorMessage(error.response.data.message);
-		}
-	};
-
 	return (
 		<View style={styles.container}>
-			{isRegister ? (
-				<View>
-					<Text style={styles.loginText}>Register</Text>
 
-					<View style={styles.form}>
-						<TextInput
-							style={styles.input}
-							placeholder="Name"
-							value={name}
-							onChangeText={setName}
-						/>
-						<TextInput
-							style={styles.input}
-							placeholder="Email"
-							value={email}
-							onChangeText={setEmail}
-							keyboardType="email-address"
-							autoCapitalize="none"
-						/>
-						<TextInput
-							style={styles.input}
-							placeholder="Phone Number"
-							value={phoneNumber}
-							onChangeText={setPhoneNumber}
-							keyboardType="phone-pad"
-						/>
-						<TextInput
-							style={styles.input}
-							placeholder="Password"
-							value={password}
-							onChangeText={setPassword}
-							secureTextEntry
-							autoCapitalize="none"
-						/>
-						<TextInput
-							style={styles.input}
-							multiline={true}
-							numberOfLines={3}
-							placeholder="Description"
-							value={description}
-							onChangeText={setDescription}
-						/>
+			<View style={styles.container}>
+				<Image
+					source={{ uri: 'https://s3-eu-west-1.amazonaws.com/tpd/logos/63517e79bdf94bc8daa1bf18/0x0.png' }}
+					style={styles.logo}
+					resizeMode="contain"
+				/>
+				<View style={styles.form}>
+					<TextInput
+						style={styles.input}
+						placeholder="Email"
+						value={email}
+						onChangeText={setEmail}
+						keyboardType="email-address"
+						autoCapitalize="none"
+					/>
+					<TextInput
+						style={styles.input}
+						placeholder="Password"
+						value={password}
+						onChangeText={setPassword}
+						secureTextEntry
+						autoCapitalize="none"
+					/>
+					{errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
 
-						{errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
+					<TouchableOpacity style={styles.buttonLogin} onPress={handleLogin}>
+						<Text style={styles.buttonText}>Login</Text>
+					</TouchableOpacity>
 
-						<TouchableOpacity style={styles.buttonLogin} onPress={handleRegister}>
-							<Text style={styles.buttonText}>Register</Text>
-						</TouchableOpacity>
-
-						<TouchableOpacity onPress={() => setIsRegister(false)}>
-							<Text style={styles.registerLink}>Already have an account? Login</Text>
-						</TouchableOpacity>
-					</View>
+					<TouchableOpacity style={styles.buttonLogin} onPress={() => navigate.navigate("Home", { screen: 'Register' })}>
+						<Text style={styles.registerLink}>Create new Account</Text>
+					</TouchableOpacity>
 				</View>
-			) : (
-				<View>
-					<Text style={styles.loginText}>Login</Text>
+			</View>
 
-					<View style={styles.form}>
-						<TextInput
-							style={styles.input}
-							placeholder="Email"
-							value={email}
-							onChangeText={setEmail}
-							keyboardType="email-address"
-							autoCapitalize="none"
-						/>
-						<TextInput
-							style={styles.input}
-							placeholder="Password"
-							value={password}
-							onChangeText={setPassword}
-							secureTextEntry
-							autoCapitalize="none"
-						/>
-						{errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
-
-						<TouchableOpacity style={styles.buttonLogin} onPress={handleLogin}>
-							<Text style={styles.buttonText}>Login</Text>
-						</TouchableOpacity>
-
-						<TouchableOpacity onPress={() => setIsRegister(true)}>
-							<Text style={styles.registerLink}>Don't have an account? Register</Text>
-						</TouchableOpacity>
-					</View>
-				</View>
-			)}
 		</View>
 	)
 }
@@ -241,8 +147,10 @@ const styles = StyleSheet.create({
 		gap: 10,
 	},
 	loginText: {
-		fontSize: 24,
-		fontWeight: '500',
+		margin: 'auto',
+		marginBottom: 20,
+		fontSize: 32,
+		fontWeight: '700',
 	},
 	input: {
 		borderColor: '#887E7E',
@@ -253,6 +161,7 @@ const styles = StyleSheet.create({
 		width: 350
 	},
 	buttonLogin: {
+		width: '100%',
 		backgroundColor: '#0B6EFE',
 		paddingVertical: 12,
 		paddingHorizontal: 20,
@@ -277,9 +186,14 @@ const styles = StyleSheet.create({
 		marginTop: 10,
 	},
 	registerLink: {
-
+		color: '#fff',
+		borderColor: '#c70505',
+		fontWeight: 'bold'
 	},
-	signup: {},
-	label: {},
-	loginWithGoogle: {}
+	logo: {
+		width: 200,
+		height: 200,
+		alignContent: 'center',
+		marginHorizontal: 'auto'
+	},
 })
