@@ -66,7 +66,7 @@ const Combo = () => {
 
     const loadFavorites = async () => {
         try {
-            const storedFavorites = await AsyncStorage.getItem('favoriteskits');
+            const storedFavorites = await AsyncStorage.getItem('favoritescombo');
             setFavorites(storedFavorites ? JSON.parse(storedFavorites) : []);
         } catch (error) {
             console.error("Error loading favorites: ", error);
@@ -96,7 +96,7 @@ const Combo = () => {
             ? favorites.filter(favId => favId !== id)
             : [...favorites, id];
         setFavorites(updatedFavorites);
-        await AsyncStorage.setItem('favoriteskits', JSON.stringify(updatedFavorites));
+        await AsyncStorage.setItem('favoritescombo', JSON.stringify(updatedFavorites));
     };
 
     const renderItem = ({ item }) => {
@@ -106,7 +106,7 @@ const Combo = () => {
 
         return (
             <TouchableOpacity
-                onPress={() => navigation.navigate('Detailkits', { kitId: item._id })}
+                onPress={() => navigation.navigate('DetailCombo', { kitId: item._id })}
                 style={styles.card}
             >
                 <Image
@@ -277,10 +277,10 @@ const styles = StyleSheet.create({
     card: {
         width: '48%',
         marginBottom: 10,
+        marginHorizontal: '1%', // Adjusts spacing between columns
         borderWidth: 1,
         borderColor: '#ddd',
         borderRadius: 10,
-        // padding: 10,
         position: 'relative',
         overflow: 'hidden',
     },

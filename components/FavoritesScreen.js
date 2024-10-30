@@ -307,6 +307,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+  deleteButton: {
+    backgroundColor: '#FF6347',
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+},
   headerButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',

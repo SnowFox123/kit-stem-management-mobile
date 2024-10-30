@@ -17,6 +17,7 @@ import LoginScreen from "./components/LoginScreen";
 import RegisterScreen from "./components/RegisterScreen";
 import Combo from "./components/Combo";
 import CartUser from "./components/CartUser";
+import DetailCombo from "./components/DetailCombo";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -41,7 +42,33 @@ const HomeStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
-
+    <Stack.Screen
+      name="CartUser"
+      component={CartUser}
+      options={{
+        title: "Cart User",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+      }}
+    />
+    <Stack.Screen
+      name="Detailkits"
+      component={Detailkits}
+      options={{
+        title: "Kit Detail",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+      }}
+    />
+    <Stack.Screen
+      name="Detaillabs"
+      component={Detaillabs}
+      options={{
+        title: "Lab Detail",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+      }}
+    />
     <Stack.Screen
       name="Register"
       component={RegisterScreen}
@@ -73,11 +100,20 @@ const ComboStack = () => (
       }}
     />
     <Stack.Screen
-      name="Detaillabs"
-      component={Detaillabs}
+      name="DetailCombo"
+      component={DetailCombo}
       options={{
-        title: "Lab Detail",
+        title: "Combo Detail",
         headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="CartUser"
+      component={CartUser}
+      options={{
+        title: "Cart User",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
       }}
     />
     <Stack.Screen
@@ -111,7 +147,7 @@ const KitsStack = () => (
         headerShown: false,
       }}
     />
-     <Stack.Screen
+    <Stack.Screen
       name="CartUser"
       component={CartUser}
       options={{
@@ -147,6 +183,16 @@ const LabsStack = () => (
       options={{
         title: "Lab Detail",
         headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+      }}
+    />
+    <Stack.Screen
+      name="CartUser"
+      component={CartUser}
+      options={{
+        title: "Cart User",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
       }}
     />
     <Stack.Screen

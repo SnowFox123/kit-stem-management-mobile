@@ -25,7 +25,7 @@ const HomeScreen = () => {
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.icon}
-                        onPress={() => navigation.navigate('Cart')} // Navigate to Cart on press
+                        onPress={() => navigation.navigate('CartUser')} // Navigate to Cart on press
                     >
                         <Icon name="shopping-cart" size={30} color="#000" />
                     </TouchableOpacity>
