@@ -40,6 +40,7 @@ const HomeStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
+
     <Stack.Screen
       name="Login"
       component={LoginScreen}

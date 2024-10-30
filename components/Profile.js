@@ -29,7 +29,10 @@ const Profile = () => {
             await axiosInstance.get('/auth/logout');
             await AsyncStorage.removeItem('token');
             await AsyncStorage.removeItem('currentUser');
-            navigation.navigate('Home', { screen: 'Login' });
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'Home' }],
+            });
         } catch (error) {
             console.log(error);
         }
@@ -88,7 +91,10 @@ const Profile = () => {
                 :
                 <View style={{ backgroundColor: '#fff', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
                     <TouchableOpacity
-                        onPress={() => navigation.navigate('Home', { screen: 'Login' })}
+                        onPress={() => navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'Home' }],
+                        })}
 
                         style={styles.gotoLogin}
                     >
