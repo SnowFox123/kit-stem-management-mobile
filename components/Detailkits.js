@@ -121,9 +121,8 @@ const Detailkits = ({ route }) => {
             });
         }
     };
-
     const newPriceAfterDiscount = (price, discount) => {
-        return price * (1 - discount);
+        return price * (1 - (discount / 100));
     };
 
     const handleRatingFilter = (rating) => {
@@ -174,7 +173,7 @@ const Detailkits = ({ route }) => {
                                     ${newPriceAfterDiscount(kit.price, kit.discount).toFixed(2) || "N/A"}
                                 </Text>
                                 <Text style={styles.originalPrice}>${kit.price?.toFixed(2) || "N/A"}</Text>
-                                <Text style={styles.discount}>-{(kit.discount * 100).toFixed(0) || 0}%</Text>
+                                <Text style={styles.discount}>-{(kit.discount) || 0}%</Text>
                             </View>
                             <Text style={styles.category}>{kit.category_name || "Category Unavailable"}</Text>
                             <Text style={styles.descriptionTitle}>Description:</Text>

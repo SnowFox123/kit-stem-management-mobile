@@ -71,7 +71,6 @@ const KitsScreen = () => {
         }
     };
 
-    const formatDiscount = (discount) => `${(discount * 100).toFixed(0)}%`;
 
     const extractCategories = (data) => {
         const categoryList = ['All', ...new Set(data.map(item => item.category_name))];
@@ -98,9 +97,9 @@ const KitsScreen = () => {
     };
 
     const renderItem = ({ item }) => {
-        const discountedPrice = item.discount
-            ? (item.price * (1 - item.discount)).toFixed(2)
-            : item.price.toFixed(2);
+            const discountedPrice = item.discount
+        ? (item.price * (1 - item.discount / 100)).toFixed(2)  // Divide discount by 100
+        : item.price.toFixed(2);
 
         return (
             <TouchableOpacity
@@ -140,7 +139,7 @@ const KitsScreen = () => {
                 <View style={styles.discountPosition}>
                     {item.discount > 0 ? (
                         <View style={styles.discountBadge}>
-                            <Text style={{ color: 'rgb(0, 110, 173)', fontWeight: '400' }}>{formatDiscount(item.discount)}</Text>
+                            <Text style={{ color: 'rgb(0, 110, 173)', fontWeight: '400' }}>{item.discount}%</Text>
                         </View>
                     ) : null}
                 </View>

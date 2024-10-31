@@ -97,8 +97,9 @@ const LabsScreen = () => {
 
     const renderItem = ({ item }) => {
         const discountedPrice = item.discount
-            ? (item.price * (1 - item.discount)).toFixed(2)
-            : item.price.toFixed(2);
+        ? (item.price * (1 - item.discount / 100)).toFixed(2)  // Divide discount by 100
+        : item.price.toFixed(2);
+
 
         return (
             <TouchableOpacity
@@ -147,7 +148,7 @@ const LabsScreen = () => {
                     {item.discount > 0 && (
                         <View style={styles.discountBadge}>
                             <Text style={{ color: 'rgb(0, 110, 173)', fontWeight: '400' }}>
-                                {formatDiscount(item.discount)}
+                                {item.discount}%
                             </Text>
                         </View>
                     )}
