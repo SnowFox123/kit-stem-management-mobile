@@ -9,6 +9,7 @@ import BlogCard from './component/card';
 import { getAllCategories } from '../service/categoryService';
 import Tag from './component/tag';
 import { getKit } from '../service/UserServices';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -19,7 +20,12 @@ const HomeScreen = () => {
     const [kit, setKit] = useState([]);
     const [popularKits, setPopularKits] = useState([]);
     const background = require('../assets/be7b1af6feaa4d6eb03070ed50b26c29.mp4');
+    const [userProfile, setUserProfile] = useState();
 
+    const getCurrentUser = async () => {
+        const currentUser = await AsyncStorage.getItem('currentUser');
+        setUserProfile(currentUser);
+    }
 
     const fetchCategories = async () => {
         try {
@@ -73,6 +79,7 @@ const HomeScreen = () => {
         fetchBlogs();
         fetchCategories();
         fetchKits();
+        getCurrentUser();
     }, []);
 
     return (
@@ -84,12 +91,14 @@ const HomeScreen = () => {
                     resizeMode="contain"
                 />
                 <View style={styles.iconContainer}>
-                    <TouchableOpacity
-                        style={styles.icon}
-                        onPress={() => navigation.navigate('Login')}
-                    >
-                        <Icon name="user" size={30} color="#000" />
-                    </TouchableOpacity>
+                    {!userProfile ??
+                        <TouchableOpacity
+                            style={styles.icon}
+                            onPress={() => navigation.navigate('Login')}
+                        >
+                            <Icon name="user" size={30} color="#000" />
+                        </TouchableOpacity>
+                    }
                     <TouchableOpacity
                         style={styles.icon}
                         onPress={() => navigation.navigate('CartUser')} // Navigate to Cart on press
