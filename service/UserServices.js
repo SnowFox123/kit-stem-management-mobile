@@ -110,9 +110,9 @@ export const addToCart = async (payload) => {
     }
 };
 
-export const detelteCart = async (payloaddelete) => {
+export const deleteCart = async (id) => {
     try {
-        const response = await axiosInstance.delete('/cart/', payloaddelete);
+        const response = await axiosInstance.delete(`/cart/${id}`);
 
         // console.log(response)
         return response; // The interceptor returns only the data, so this is equivalent to returning response.data
@@ -138,7 +138,7 @@ export const getCart = async (payload) => {
 
 export const UpdateStatusCart = async (payload2) => {
     try {
-        const response = await axiosInstance.post('/cart/update-status', payload2);
+        const response = await axiosInstance.put('/cart/update-status', payload2);
 
         // console.log(response)
         return response; // The interceptor returns only the data, so this is equivalent to returning response.data

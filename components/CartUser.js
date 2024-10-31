@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, FlatList, ActivityIndicator, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, Image, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { getCart } from '../service/UserServices';
+import { getCart, deleteCart, UpdateStatusCart } from '../service/UserServices';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
@@ -38,6 +38,7 @@ const CartUser = () => {
         try {
             const response = await getCart(payload);
             const newItems = response.data?.pageData?.filter(item => item.status === 'new') || [];
+            console.log("🚀 ~ fetchCartItems ~ newItems:", newItems)
 
             // Group items by product_id and calculate quantities
             const groupedItems = newItems.reduce((acc, item) => {
@@ -97,25 +98,74 @@ const CartUser = () => {
         }
     };
 
-    const deleteSelectedItems = () => {
+    const deleteSelectedItems = async () => {
         closeAllSwipeables();
-        const updatedItems = cartItems.filter(item => !selectedItems.has(item._id));
-        setCartItems(updatedItems);
-        setSelectedItems(new Set());
+
+        // Confirm deletion before proceeding
+        Alert.alert(
+            'Confirm Deletion',
+            'Are you sure you want to delete the selected items from your cart?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'OK',
+                    onPress: async () => {
+                        const remainingItems = cartItems.filter(item => !selectedItems.has(item._id));
+
+                        for (const id of selectedItems) {
+                            try {
+                                await deleteCart(id); // Call the API for each selected item
+                            } catch (error) {
+                                console.error(`Error deleting item with id ${id}:`, error);
+                            }
+                        }
+
+                        setCartItems(remainingItems);
+                        setSelectedItems(new Set()); // Clear the selected items set
+                        Toast.show({
+                            text1: 'Items Deleted',
+                            text2: 'Selected items have been removed from your cart.',
+                            type: 'success',
+                            position: 'top',
+                            visibilityTime: 3000,
+                        });
+                    },
+                },
+            ],
+            { cancelable: false } // Prevent closing by tapping outside
+        );
     };
 
-    const deleteItem = (id) => {
-        closeAllSwipeables();
-        const updatedItems = cartItems.filter(item => item._id !== id);
-        setCartItems(updatedItems);
-        Toast.show({
-            text1: 'Item Deleted',
-            text2: 'The item has been removed from your cart.',
-            type: 'success',
-            position: 'top',
-            visibilityTime: 3000,
-        });
+
+
+    const deleteItem = async (id) => {
+        try {
+            await deleteCart(id); // Call the API to delete the item from the cart
+            closeAllSwipeables();
+            const updatedItems = cartItems.filter(item => item._id !== id);
+            setCartItems(updatedItems);
+            Toast.show({
+                text1: 'Item Deleted',
+                text2: 'The item has been removed from your cart.',
+                type: 'success',
+                position: 'top',
+                visibilityTime: 3000,
+            });
+        } catch (error) {
+            console.error("Error deleting item: ", error);
+            Toast.show({
+                text1: 'Error',
+                text2: 'Failed to delete item. Please try again later.',
+                type: 'error',
+                position: 'top',
+                visibilityTime: 3000,
+            });
+        }
     };
+
 
     const calculateTotalPrice = () => {
         let total = 0;
@@ -128,15 +178,38 @@ const CartUser = () => {
         return total.toFixed(2);
     };
 
-    const handlePayment = () => {
+    const handlePayment = async () => {
         closeAllSwipeables();
-        Toast.show({
-            text1: 'Payment',
-            text2: `Proceeding to payment for $${calculateTotalPrice()}`,
-            type: 'success',
-            position: 'top',
-            visibilityTime: 3000,
-        });
+
+        // Prepare the payload with selected items
+        const payload2 = {
+            status: "waiting_paid",
+            items: Array.from(selectedItems).map(id => {
+                const item = cartItems.find(cartItem => cartItem._id === id);
+                return item ? { _id: item._id, cart_no: item.cart_no } : null;
+            }).filter(Boolean) // Filter out any null values
+        };
+
+        try {
+            const response = await UpdateStatusCart(payload2); // Call the API
+            Toast.show({
+                text1: 'Payment',
+                text2: `Proceeding to payment for $${calculateTotalPrice()}`,
+                type: 'success',
+                position: 'top',
+                visibilityTime: 3000,
+            });
+            console.log("Payment successful:", response);
+        } catch (error) {
+            console.error("Error updating cart status:", error);
+            Toast.show({
+                text1: 'Error',
+                text2: 'Failed to update cart status. Please try again later.',
+                type: 'error',
+                position: 'top',
+                visibilityTime: 3000,
+            });
+        }
     };
 
     const renderCartItem = ({ item }) => {
@@ -159,7 +232,7 @@ const CartUser = () => {
             >
                 <TouchableOpacity
                     onPress={() => {
-                        navigation.navigate('Detailkits', { kitId: item._id });
+                        // navigation.navigate('Detailkits', { kitId: item._id });
                         closeSwipeable(); // Close swipeable when interacting with the item
                     }}
                     style={[styles.cartItem, selectedItems.has(item._id) && styles.selectedCartItem]}
@@ -217,21 +290,23 @@ const CartUser = () => {
                 <Text style={styles.headerTitle}>Cart</Text>
             </View>
 
-            <View style={styles.buttonBar}>
-                <TouchableOpacity onPress={selectAll} style={styles.barButton}>
-                    <View style={styles.selectAllContainer}>
-                        <Text style={styles.barButtonText}>
-                            {selectedItems.size === cartItems.length ? 'Deselect All' : 'Select All'}
-                        </Text>
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => {
-                    setEditMode(!editMode);
-                    closeAllSwipeables(); // Close all swipeables on edit mode toggle
-                }} style={styles.barButton}>
-                    <Text style={styles.barButtonText}>{editMode ? 'Cancel Edit' : 'Edit'}</Text>
-                </TouchableOpacity>
-            </View>
+            {cartItems.length > 0 && (
+                <View style={styles.buttonBar}>
+                    <TouchableOpacity onPress={selectAll} style={styles.barButton}>
+                        <View style={styles.selectAllContainer}>
+                            <Text style={styles.barButtonText}>
+                                {selectedItems.size === cartItems.length ? 'Deselect All' : 'Select All'}
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => {
+                        setEditMode(!editMode);
+                        closeAllSwipeables(); // Close all swipeables on edit mode toggle
+                    }} style={styles.barButton}>
+                        <Text style={styles.barButtonText}>{editMode ? 'Cancel Edit' : 'Edit'}</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
             {Object.keys(groupedItems).length > 0 ? (
                 <FlatList
@@ -252,29 +327,31 @@ const CartUser = () => {
                 <Text style={styles.emptyCart}>Your cart is empty.</Text>
             )}
 
-            <View style={styles.totalContainer}>
-                <TouchableOpacity onPress={selectAll} style={{ flexDirection: 'row' }}>
-                    <Icon
-                        name={selectedItems.size === cartItems.length ? 'check-square' : 'square-o'}
-                        size={24}
-                        color={selectedItems.size === cartItems.length ? '#FF6347' : '#777'}
-                    />
-                    <Text style={{ marginLeft: 10 }}>ALL</Text>
-                </TouchableOpacity>
-                {!editMode && (
-                    <Text style={styles.totalText}>Total: ${calculateTotalPrice()}</Text>
-                )}
-                {editMode && (
-                    <TouchableOpacity onPress={deleteSelectedItems} style={styles.deleteButton}>
-                        <Text style={styles.deleteButtonText}>Delete Selected</Text>
+            {cartItems.length > 0 && (
+                <View style={styles.totalContainer}>
+                    <TouchableOpacity onPress={selectAll} style={{ flexDirection: 'row' }}>
+                        <Icon
+                            name={selectedItems.size === cartItems.length ? 'check-square' : 'square-o'}
+                            size={24}
+                            color={selectedItems.size === cartItems.length ? '#FF6347' : '#777'}
+                        />
+                        <Text style={{ marginLeft: 10 }}>ALL</Text>
                     </TouchableOpacity>
-                )}
-                {!editMode && (
-                    <TouchableOpacity onPress={handlePayment} style={styles.deleteButton}>
-                        <Text style={styles.deleteButtonText}>Payment</Text>
-                    </TouchableOpacity>
-                )}
-            </View>
+                    {!editMode && (
+                        <Text style={styles.totalText}>Total: ${calculateTotalPrice()}</Text>
+                    )}
+                    {editMode && (
+                        <TouchableOpacity onPress={deleteSelectedItems} style={styles.deleteButton}>
+                            <Text style={styles.deleteButtonText}>Delete Selected</Text>
+                        </TouchableOpacity>
+                    )}
+                    {!editMode && (
+                        <TouchableOpacity onPress={handlePayment} style={styles.deleteButton}>
+                            <Text style={styles.deleteButtonText}>Payment</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
+            )}
         </SafeAreaView>
     );
 };
@@ -403,6 +480,10 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     totalContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
         paddingLeft: 10,
         paddingRight: 10,
         backgroundColor: '#FFF3E0',
@@ -455,6 +536,13 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 18,
     },
+    emptyCart: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        top: 300,
+        left: 140
+    }
 });
 
 export default CartUser;

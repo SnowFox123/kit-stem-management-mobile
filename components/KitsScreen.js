@@ -40,7 +40,7 @@ const KitsScreen = () => {
         setIsLoading(true);
         try {
             const payload = {
-                searchCondition: { keyword: "", category_id: "", status: "", is_deleted: false },
+                searchCondition: { keyword: "", category_id: "", status: "new", is_deleted: false },
                 pageInfo: { pageNum: 1, pageSize: 10 }
             };
             const response = await getKit(payload);

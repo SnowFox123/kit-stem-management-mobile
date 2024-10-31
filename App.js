@@ -50,6 +50,7 @@ const HomeStack = () => (
       options={{
         title: "Combo Detail",
         headerTitleStyle: styles.headerTitle,
+        headerShown: false,
       }}
     />
     <Stack.Screen
@@ -130,6 +131,7 @@ const ComboStack = () => (
       options={{
         title: "Combo Detail",
         headerTitleStyle: styles.headerTitle,
+        headerShown: false,
       }}
     />
     <Stack.Screen
