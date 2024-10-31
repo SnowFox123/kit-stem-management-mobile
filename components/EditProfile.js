@@ -8,7 +8,6 @@ import Toast from 'react-native-toast-message';
 
 function EditProfile() {
 	const navigation = useNavigation();
-	const route = useRoute();
 	const [userProfile, setUserProfile] = useState(null);
 	const [oldPassword, setOldPassword] = useState('');
 	const [newPassword, setNewPassword] = useState('');
@@ -59,8 +58,7 @@ function EditProfile() {
 						visibilityTime: 2000,
 						autoHide: true,
 					});
-
-					navigation.navigate('Profile');
+					navigation.goBack();
 				}
 			} catch (error) {
 				console.error('Error updating password:', error);
@@ -73,15 +71,8 @@ function EditProfile() {
 
 	return (
 		<View style={styles.container}>
-			{/* Custom Header with Back Button */}
-			<View style={styles.header}>
-				<TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-					<Icon name="arrow-back" size={24} color="#000" />
-				</TouchableOpacity>
-				<Text style={styles.headerTitle}>Edit Profile</Text>
-			</View>
 
-			<Text style={styles.title}>Change Password</Text>
+
 
 			<Text style={styles.label}>Old Password</Text>
 			<TextInput

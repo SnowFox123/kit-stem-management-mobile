@@ -1,4 +1,4 @@
-import { Button, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Button, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import dayjs from 'dayjs';
@@ -29,10 +29,7 @@ const Profile = () => {
             await axiosInstance.get('/auth/logout');
             await AsyncStorage.removeItem('token');
             await AsyncStorage.removeItem('currentUser');
-            navigation.reset({
-                index: 0,
-                routes: [{ name: 'Home' }],
-            });
+            navigation.navigate('Profile');
         } catch (error) {
             console.log(error);
         }
@@ -43,20 +40,9 @@ const Profile = () => {
     }, [])
 
     return (
-        <SafeAreaView>
+        <ScrollView>
             {userProfile ?
                 <View style={styles.container}>
-                    <View>
-                        <TouchableOpacity
-                            style={styles.editButton}
-                            onPress={() => navigation.navigate('Home', {
-                                screen: 'EditProfile',
-                                params: { userProfile },
-                            })}
-                        >
-                            <Text>Edit Profile</Text>
-                        </TouchableOpacity>
-                    </View>
                     <Text style={{ fontSize: 30, marginBottom: 20, textAlign: 'center', fontWeight: '600' }}>Your Profile</Text>
 
                     <View style={styles.avatar}>
@@ -94,26 +80,31 @@ const Profile = () => {
                     <View style={styles.inputField}>
                         <Text style={styles.value}>{dayjs(userProfile.dob).format('DD/MM/YYYY')}</Text>
                     </View>
-
-                    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                        <Text style={{ color: '#000000', fontWeight: '500', fontSize: 24 }}>Logout</Text>
-                    </TouchableOpacity>
+                    <View>
+                        <TouchableOpacity
+                            style={styles.editButton}
+                            onPress={() => navigation.navigate('EditProfile', { userProfile })}
+                        >
+                            <Text>Edit Profile</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View>
+                        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                            <Text style={{ color: '#ec0027', fontWeight: '500', fontSize: 24 }}>Logout</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
                 :
                 <View style={{ backgroundColor: '#fff', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
                     <TouchableOpacity
-                        onPress={() => navigation.reset({
-                            index: 0,
-                            routes: [{ name: 'Home' }],
-                        })}
-
+                        onPress={() => navigation.navigate('Login')}
                         style={styles.gotoLogin}
                     >
                         <Text style={{ color: '#000000', fontWeight: '500', fontSize: 24 }}>Go to Login</Text>
                     </TouchableOpacity>
                 </View>
             }
-        </SafeAreaView>
+        </ScrollView>
     )
 }
 
@@ -169,7 +160,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 50,
         borderRadius: 10,
-        borderColor: '#feb8f6',
+        borderColor: '#ec0027',
         borderWidth: 1,
         justifyContent: 'center',
     },
@@ -189,7 +180,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 50,
         borderRadius: 10,
-        borderColor: '#feb8f6',
+        borderColor: '#04bd3f',
         borderWidth: 1,
         justifyContent: 'center',
     },
