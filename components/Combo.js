@@ -44,7 +44,7 @@ const Combo = () => {
                 pageInfo: { pageNum: 1, pageSize: 10 }
             };
             const response = await getCombo(payload);
-            // console.log("🚀 ~ fetchData ~ response:", response)
+            // // console.log("🚀 ~ fetchData ~ response:", response)
 
 
             const validData = response.data.pageData.filter(item => !item.is_deleted);
@@ -138,6 +138,7 @@ const Combo = () => {
 
                     <View style={styles.categorySoldContainer}>
                         <Text style={styles.brand}>{item.category_name}</Text>
+                        <Text style={styles.brand}>{item.status}</Text>
                         <Text style={styles.soldText}>Sold 1.1k</Text>
                     </View>
 

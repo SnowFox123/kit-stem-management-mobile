@@ -56,7 +56,7 @@ const DetailCombo = ({ route }) => {
 
     const loadFavorites = async () => {
         try {
-            const storedFavorites = await AsyncStorage.getItem('favoriteskits');
+            const storedFavorites = await AsyncStorage.getItem('favoritescombo');
             if (storedFavorites) {
                 setFavorites(JSON.parse(storedFavorites));
             }
@@ -71,7 +71,7 @@ const DetailCombo = ({ route }) => {
             : [...favorites, id];
 
         setFavorites(updatedFavorites);
-        await AsyncStorage.setItem('favoriteskits', JSON.stringify(updatedFavorites));
+        await AsyncStorage.setItem('favoritescombo', JSON.stringify(updatedFavorites));
 
         Toast.show({
             text1: favorites.includes(id) ? 'Removed from favorites' : 'Added to favorites',
@@ -143,7 +143,11 @@ const DetailCombo = ({ route }) => {
 
                 <ScrollView contentContainerStyle={styles.container}>
                     <View style={styles.imageContainer}>
-                        <Image source={{ uri: kit.image_url }} style={styles.image} resizeMode="contain" />
+                        <Image
+                            source={{ uri: kit.image_url || 'https://www.crunchlabs.com/cdn/shop/products/build-box-builds-stack_921810d0-dbfc-4836-9d38-9cf4b7843a4e.jpg?v=1703095056' }}
+                            style={styles.image}
+                            resizeMode="contain"
+                        />
                         <TouchableOpacity onPress={() => toggleFavorite(kit._id)} style={styles.favoriteIcon}>
                             <Icon name={favorites.includes(kit._id) ? 'heart' : 'heart-o'} size={24} color="red" />
                         </TouchableOpacity>
