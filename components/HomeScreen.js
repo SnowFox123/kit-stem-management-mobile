@@ -128,14 +128,14 @@ const HomeScreen = () => {
             </View>
 
             {/* Categories Section */}
-            <View style={styles.categorySection}>
+            {/* <View style={styles.categorySection}>
                 <Text style={styles.sectionTitle}>Categories</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryContainer}>
                     {categories.map((category) => (
                         <Tag name={category.name} key={category._id} />
                     ))}
                 </ScrollView>
-            </View>
+            </View> */}
 
             <View style={styles.featuredSection}>
                 <Text style={styles.sectionTitle}>New Kits & Popular Kits</Text>
@@ -152,7 +152,7 @@ const HomeScreen = () => {
                                 resizeMode="cover"
                             />
                             <View style={{ padding: 10 }}>
-                                <Text style={styles.cardContent} numberOfLines={2}>{kit.name}</Text>
+                                <Text style={styles.cardContent} numberOfLines={1} ellipsizeMode="tail">{kit.name}</Text>
                                 <View style={styles.cardRating}>
                                     <Icon name="star" size={24} color="#FFD700" />
                                     <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 6 }}>sao</Text>

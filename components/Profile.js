@@ -46,6 +46,17 @@ const Profile = () => {
         <SafeAreaView>
             {userProfile ?
                 <View style={styles.container}>
+                    <View>
+                        <TouchableOpacity
+                            style={styles.editButton}
+                            onPress={() => navigation.navigate('Home', {
+                                screen: 'EditProfile',
+                                params: { userProfile },
+                            })}
+                        >
+                            <Text>Edit Profile</Text>
+                        </TouchableOpacity>
+                    </View>
                     <Text style={{ fontSize: 30, marginBottom: 20, textAlign: 'center', fontWeight: '600' }}>Your Profile</Text>
 
                     <View style={styles.avatar}>
@@ -170,5 +181,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderColor: '#ffffff',
         marginTop: 20,
-    }
+    },
+    editButton: {
+        display: 'flex',
+        alignItems: 'center',
+        marginTop: 20,
+        width: '100%',
+        height: 50,
+        borderRadius: 10,
+        borderColor: '#feb8f6',
+        borderWidth: 1,
+        justifyContent: 'center',
+    },
 });

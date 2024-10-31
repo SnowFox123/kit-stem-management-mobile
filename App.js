@@ -18,6 +18,8 @@ import RegisterScreen from "./components/RegisterScreen";
 import Combo from "./components/Combo";
 import CartUser from "./components/CartUser";
 import DetailCombo from "./components/DetailCombo";
+import EditProfile from "./components/EditProfile";
+import ForgotPasswordScreen from "./components/ForgotPasswordScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -42,12 +44,28 @@ const HomeStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
-
+    <Stack.Screen
+      name="DetailCombo"
+      component={DetailCombo}
+      options={{
+        title: "Combo Detail",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+      }}
+    />
     <Stack.Screen
       name="Login"
       component={LoginScreen}
       options={{
         title: "Login",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="ForgotPassword"
+      component={ForgotPasswordScreen}
+      options={{
+        title: "Forgot Password",
         headerTitleStyle: styles.headerTitle,
       }}
     />
@@ -86,6 +104,14 @@ const HomeStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfile}
+      options={{
+        title: "Update Password",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
   </Stack.Navigator>
 );
 
@@ -105,6 +131,7 @@ const ComboStack = () => (
       options={{
         title: "Combo Detail",
         headerTitleStyle: styles.headerTitle,
+        headerShown: false,
       }}
     />
     <Stack.Screen
@@ -121,6 +148,14 @@ const ComboStack = () => (
       component={Profile}
       options={{
         title: "Profile",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfile}
+      options={{
+        title: "Update Password",
         headerTitleStyle: styles.headerTitle,
       }}
     />
@@ -147,7 +182,7 @@ const KitsStack = () => (
         headerShown: false,
       }}
     />
-     <Stack.Screen
+    <Stack.Screen
       name="Detaillabs"
       component={Detaillabs}
       options={{
@@ -170,6 +205,14 @@ const KitsStack = () => (
       component={Profile}
       options={{
         title: "Profile",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfile}
+      options={{
+        title: "Update Password",
         headerTitleStyle: styles.headerTitle,
       }}
     />
@@ -212,6 +255,14 @@ const LabsStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfile}
+      options={{
+        title: "Update Password",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
   </Stack.Navigator>
 );
 
@@ -238,6 +289,14 @@ const FavoritesStack = () => (
       component={Profile}
       options={{
         title: "Profile",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfile}
+      options={{
+        title: "Update Password",
         headerTitleStyle: styles.headerTitle,
       }}
     />
