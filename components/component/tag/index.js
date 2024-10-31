@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
 	tag: {
 		paddingVertical: 5,
 		paddingHorizontal: 10,
-		backgroundColor: '#dc1c09',
+		backgroundColor: '#3a4eb8',
 		borderRadius: 3,
 		marginRight: 10,
 		marginBottom: 10,

@@ -18,6 +18,7 @@ import RegisterScreen from "./components/RegisterScreen";
 import Combo from "./components/Combo";
 import CartUser from "./components/CartUser";
 import DetailCombo from "./components/DetailCombo";
+import EditProfile from "./components/EditProfile";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -93,6 +94,14 @@ const HomeStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfile}
+      options={{
+        title: "Update Password",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
   </Stack.Navigator>
 );
 
@@ -128,6 +137,14 @@ const ComboStack = () => (
       component={Profile}
       options={{
         title: "Profile",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfile}
+      options={{
+        title: "Update Password",
         headerTitleStyle: styles.headerTitle,
       }}
     />
@@ -180,6 +197,14 @@ const KitsStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfile}
+      options={{
+        title: "Update Password",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
   </Stack.Navigator>
 );
 
@@ -219,6 +244,14 @@ const LabsStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfile}
+      options={{
+        title: "Update Password",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
   </Stack.Navigator>
 );
 
@@ -245,6 +278,14 @@ const FavoritesStack = () => (
       component={Profile}
       options={{
         title: "Profile",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfile}
+      options={{
+        title: "Update Password",
         headerTitleStyle: styles.headerTitle,
       }}
     />
