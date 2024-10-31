@@ -78,14 +78,14 @@ const HomeScreen = () => {
                     resizeMode="contain"
                 />
                 <View style={styles.iconContainer}>
-                    {!userProfile ??
+                    {!userProfile ? (
                         <TouchableOpacity
                             style={styles.icon}
                             onPress={() => navigation.navigate('Login')}
                         >
                             <Icon name="user" size={30} color="#000" />
                         </TouchableOpacity>
-                    }
+                    ) : null}
                     <TouchableOpacity
                         style={styles.icon}
                         onPress={() => navigation.navigate('CartUser')} // Navigate to Cart on press
