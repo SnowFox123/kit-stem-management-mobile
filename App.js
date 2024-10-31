@@ -45,6 +45,7 @@ const HomeStack = () => (
       options={{
         title: "Detailkits",
         headerTitleStyle: styles.headerTitle,
+        headerShown: false,
       }}
     />
     <Stack.Screen
@@ -256,6 +257,7 @@ const FavoritesStack = () => (
       options={{
         title: "Detail kits",
         headerTitleStyle: styles.headerTitle,
+        headerShown: false,
       }}
     />
     <Stack.Screen
@@ -264,7 +266,6 @@ const FavoritesStack = () => (
       options={{
         title: "CheckOut",
         headerTitleStyle: styles.headerTitle,
-        headerShown: false,
       }}
     />
   </Stack.Navigator>

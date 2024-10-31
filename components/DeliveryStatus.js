@@ -39,8 +39,8 @@ const DeliveryStatus = () => {
             <View style={styles.itemDetails}>
                 <Text style={styles.productName}>{item.product_name}</Text>
                 <Text style={styles.productPrice}>Price: {item.price} đ</Text>
-                <Text style={styles.productPrice}>Price new: {(item.price)- ((item.price) * (item.discount))} đ</Text>
-                <Text style={styles.productDiscount}>Discount: {(item.discount) * 100}%</Text>
+                <Text style={styles.productPrice}>Price new: {item.price * (1 - (item.discount / 100))} đ</Text>
+                <Text style={styles.productDiscount}>Discount: {(item.discount)}%</Text>
             </View>
         </View>
     );

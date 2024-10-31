@@ -131,6 +131,7 @@ const KitsScreen = () => {
 
                     <View style={styles.categorySoldContainer}>
                         <Text style={styles.brand}>{item.category_name}</Text>
+                        <Text style={styles.brand}>{item.quantity}</Text>
                         <Text style={styles.soldText}>Sold 1.1k</Text>
                     </View>
 

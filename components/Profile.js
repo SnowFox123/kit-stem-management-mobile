@@ -92,21 +92,27 @@ const Profile = () => {
                             </View>
                         </TouchableOpacity>
                     </View>
+                    <View>
+                        <TouchableOpacity
+                            style={styles.editButton}
+                            onPress={() => navigation.navigate('PurchaseHistory', { userProfile })}
+                        >
+                            <View style={styles.iconTextContainer}>
+                                <Icon name="history" size={30} color="#4CAF50" style={styles.headerIcon} />
+                                <Text style={styles.iconText}>Purchase History</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
 
                     <View>
                         <TouchableOpacity
                             style={styles.editButton}
                             onPress={() => navigation.navigate('EditProfile', { userProfile })}
                         >
-                            <Text>Edit Profile</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View>
-                        <TouchableOpacity
-                            style={styles.editButton}
-                            onPress={() => navigation.navigate('PurchaseHistory', { userProfile })}
-                        >
-                            <Text>Purchase History</Text>
+                            <View style={styles.iconTextContainer}>
+                                <Icon name="id-card-o" size={30} color="#4CAF50" style={styles.headerIcon} />
+                                <Text style={styles.iconText}>Edit Profile</Text>
+                            </View>
                         </TouchableOpacity>
                     </View>
                     <View>

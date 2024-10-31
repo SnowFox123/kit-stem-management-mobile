@@ -52,7 +52,7 @@ const LabsScreen = () => {
             setIsLoading(false);
         }
     };
-    
+
     const filterByCategory = (category) => {
         setSelectedCategory(category);
         setFilteredLabs(category === 'All'
@@ -60,7 +60,7 @@ const LabsScreen = () => {
             : data.filter(item => item.category_name === category && item.status === "new" && !item.is_deleted)
         );
     };
-    
+
 
     const loadFavorites = async () => {
         try {
@@ -97,8 +97,8 @@ const LabsScreen = () => {
 
     const renderItem = ({ item }) => {
         const discountedPrice = item.discount
-        ? (item.price * (1 - item.discount / 100)).toFixed(2)  // Divide discount by 100
-        : item.price.toFixed(2);
+            ? (item.price * (1 - item.discount / 100)).toFixed(2)  // Divide discount by 100
+            : item.price.toFixed(2);
 
 
         return (
@@ -139,6 +139,7 @@ const LabsScreen = () => {
                     </View>
                     <View style={styles.categorySoldContainer}>
                         <Text style={styles.brand}>{item.category_name}</Text>
+                        <Text style={styles.brand}>{item.quantity}</Text>
                         <Text style={styles.soldText}>Max Support: {item.max_support_count || ''}</Text>
                         {/* <Text style={styles.soldText}>Max Support: {item.status}</Text> */}
                     </View>

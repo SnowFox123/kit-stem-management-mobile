@@ -39,8 +39,11 @@ const PurchaseHistory = () => {
             <View style={styles.itemDetails}>
                 <Text style={styles.productName}>{item.product_name}</Text>
                 <Text style={styles.productPrice}>Price: {item.price_paid} đ</Text>
-                <Text style={styles.productDiscount}>Discount: {(item.discount * 100).toFixed(0)}%</Text>
-                <Text style={styles.productPrice}>Delivery by {item.staff_name}</Text>
+                <Text style={styles.productDiscount}>Discount: {(item.discount)}%</Text>
+                {/* Hide delivery info if the status is 'delivered' */}
+                {status !== 'new' && (
+                    <Text style={styles.productPrice}>Delivery by {item.staff_name}</Text>
+                )}
             </View>
         </View>
     );
@@ -93,6 +96,10 @@ const PurchaseHistory = () => {
         </View>
     );
 };
+
+// Styles remain unchanged
+
+
 
 const styles = StyleSheet.create({
     container: {

@@ -112,10 +112,10 @@ const HomeScreen = () => {
                             />
                             <View style={{ padding: 10 }}>
                                 <Text style={styles.cardContent} numberOfLines={2}>{kit.name}</Text>
-                                <View style={styles.cardRating}>
+                                {/* <View style={styles.cardRating}>
                                     <Icon name="star" size={24} color="#FFD700" />
                                     <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 6 }}>sao</Text>
-                                </View>
+                                </View> */}
                                 <Text style={styles.cardCategory}>{kit.category_name}</Text>
                             </View>
                         </TouchableOpacity>
@@ -139,10 +139,10 @@ const HomeScreen = () => {
                             />
                             <View style={{ padding: 10 }}>
                                 <Text style={styles.cardContent} numberOfLines={1} ellipsizeMode="tail">{kit.name}</Text>
-                                <View style={styles.cardRating}>
+                                {/* <View style={styles.cardRating}>
                                     <Icon name="star" size={24} color="#FFD700" />
                                     <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 6 }}>sao</Text>
-                                </View>
+                                </View> */}
                                 <Text style={styles.cardCategory}>{kit.category_name}</Text>
                             </View>
                         </TouchableOpacity>

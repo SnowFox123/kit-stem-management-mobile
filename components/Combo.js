@@ -44,7 +44,7 @@ const Combo = () => {
                 pageInfo: { pageNum: 1, pageSize: 10 }
             };
             const response = await getCombo(payload);
-            // // console.log("🚀 ~ fetchData ~ response:", response)
+            // // // console.log("🚀 ~ fetchData ~ response:", response)
 
 
             const validData = response.data.pageData.filter(item => !item.is_deleted);
@@ -101,8 +101,8 @@ const Combo = () => {
 
     const renderItem = ({ item }) => {
         const discountedPrice = item.discount
-        ? (item.price * (1 - item.discount / 100)).toFixed(2)  // Divide discount by 100
-        : item.price.toFixed(2);
+            ? (item.price * (1 - item.discount / 100)).toFixed(2)  // Divide discount by 100
+            : item.price.toFixed(2);
 
         return (
             <TouchableOpacity
@@ -110,7 +110,7 @@ const Combo = () => {
                 style={styles.card}
             >
                 <Image
-                    source={{ uri: item.image_url || 'https://www.crunchlabs.com/cdn/shop/products/build-box-builds-stack_921810d0-dbfc-4836-9d38-9cf4b7843a4e.jpg?v=1703095056'}}
+                    source={{ uri: item.image_url || 'https://www.crunchlabs.com/cdn/shop/products/build-box-builds-stack_921810d0-dbfc-4836-9d38-9cf4b7843a4e.jpg?v=1703095056' }}
                     style={styles.cardImage}
                     resizeMode="contain"
                 />
@@ -124,10 +124,10 @@ const Combo = () => {
                 <View style={{ padding: 10 }}>
                     <Text style={styles.artName} numberOfLines={2}>{item.name}</Text>
 
-                    <View style={styles.ratingContainer}>
+                    {/* <View style={styles.ratingContainer}>
                         <Icon name="star" size={14} color="#FFD700" />
                         <Text style={styles.averageRating}>sao</Text>
-                    </View>
+                    </View> */}
 
                     <View style={styles.priceGroup}>
                         <Text style={styles.price}>${discountedPrice}</Text>
@@ -138,6 +138,7 @@ const Combo = () => {
 
                     <View style={styles.categorySoldContainer}>
                         <Text style={styles.brand}>{item.category_name}</Text>
+                        <Text style={styles.brand}>{item.quantity}</Text>
                         <Text style={styles.brand}>{item.status}</Text>
                         <Text style={styles.soldText}>Sold 1.1k</Text>
                     </View>
