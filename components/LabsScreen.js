@@ -39,11 +39,11 @@ const LabsScreen = () => {
         setIsLoading(true);
         try {
             const payload = {
-                searchCondition: { keyword: "", category_id: "", status: "", is_deleted: false },
+                searchCondition: { keyword: "", category_id: "", status: "new", is_deleted: false },
                 pageInfo: { pageNum: 1, pageSize: 100 }
             };
             const response = await getLabs(payload);
-            const validData = response.data.pageData.filter(item => !item.is_deleted);
+            const validData = response.data.pageData.filter(item => !item.is_deleted && item.status === "new");
             setData(validData);
             setFilteredLabs(validData);
         } catch (error) {
@@ -52,6 +52,15 @@ const LabsScreen = () => {
             setIsLoading(false);
         }
     };
+    
+    const filterByCategory = (category) => {
+        setSelectedCategory(category);
+        setFilteredLabs(category === 'All'
+            ? data.filter(item => item.status === "new")
+            : data.filter(item => item.category_name === category && item.status === "new" && !item.is_deleted)
+        );
+    };
+    
 
     const loadFavorites = async () => {
         try {
@@ -72,13 +81,6 @@ const LabsScreen = () => {
         })));
     };
 
-    const filterByCategory = (category) => {
-        setSelectedCategory(category);
-        setFilteredLabs(category === 'All'
-            ? data
-            : data.filter(item => item.category_name === category && !item.is_deleted)
-        );
-    };
 
     const toggleFavorite = async (id) => {
         const updatedFavorites = favorites.includes(id)
@@ -137,6 +139,7 @@ const LabsScreen = () => {
                     <View style={styles.categorySoldContainer}>
                         <Text style={styles.brand}>{item.category_name}</Text>
                         <Text style={styles.soldText}>Max Support: {item.max_support_count || ''}</Text>
+                        {/* <Text style={styles.soldText}>Max Support: {item.status}</Text> */}
                     </View>
                 </View>
 

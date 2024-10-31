@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, FlatList, ActivityIndicator, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, Image, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { getCart } from '../service/UserServices';
+import { getCart, deleteCart, UpdateStatusCart } from '../service/UserServices';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
@@ -14,8 +14,6 @@ const CartUser = () => {
     const [selectedItems, setSelectedItems] = useState(new Set());
     const [editMode, setEditMode] = useState(false);
     const navigation = useNavigation();
-
-    // Create a ref to manage Swipeable components
     const swipeableRefs = useRef(new Map());
 
     useEffect(() => {
@@ -36,16 +34,23 @@ const CartUser = () => {
                 pageSize: 10,
             },
         };
-    
+
         try {
             const response = await getCart(payload);
             const newItems = response.data?.pageData?.filter(item => item.status === 'new') || [];
-    
-            // Filter to keep only unique items based on `_id`
-            const uniqueItems = Array.from(
-                new Map(newItems.map(item => [item.product_id, item])).values()
-            );
-    
+            console.log("🚀 ~ fetchCartItems ~ newItems:", newItems)
+
+            // Group items by product_id and calculate quantities
+            const groupedItems = newItems.reduce((acc, item) => {
+                if (!acc[item.product_id]) {
+                    acc[item.product_id] = { ...item, quantity: 0 }; // Initialize with item data
+                }
+                acc[item.product_id].quantity += 1; // Increment quantity
+                return acc;
+            }, {});
+
+            // Convert grouped items back to an array
+            const uniqueItems = Object.values(groupedItems);
             setCartItems(uniqueItems);
         } catch (error) {
             setError('Failed to load cart items.');
@@ -60,7 +65,18 @@ const CartUser = () => {
             setLoading(false);
         }
     };
-    
+
+    // Function to group items by product type
+    const groupItemsByType = () => {
+        return cartItems.reduce((acc, item) => {
+            const { product_type } = item;
+            if (!acc[product_type]) {
+                acc[product_type] = [];
+            }
+            acc[product_type].push(item);
+            return acc;
+        }, {});
+    };
 
     const toggleSelection = (id) => {
         const newSelectedItems = new Set(selectedItems);
@@ -74,7 +90,6 @@ const CartUser = () => {
 
     const selectAll = () => {
         closeAllSwipeables();
-
         if (selectedItems.size === cartItems.length) {
             setSelectedItems(new Set());
         } else {
@@ -83,46 +98,118 @@ const CartUser = () => {
         }
     };
 
-    const deleteSelectedItems = () => {
+    const deleteSelectedItems = async () => {
         closeAllSwipeables();
-        const updatedItems = cartItems.filter(item => !selectedItems.has(item._id));
-        setCartItems(updatedItems);
-        setSelectedItems(new Set());
+
+        // Confirm deletion before proceeding
+        Alert.alert(
+            'Confirm Deletion',
+            'Are you sure you want to delete the selected items from your cart?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'OK',
+                    onPress: async () => {
+                        const remainingItems = cartItems.filter(item => !selectedItems.has(item._id));
+
+                        for (const id of selectedItems) {
+                            try {
+                                await deleteCart(id); // Call the API for each selected item
+                            } catch (error) {
+                                console.error(`Error deleting item with id ${id}:`, error);
+                            }
+                        }
+
+                        setCartItems(remainingItems);
+                        setSelectedItems(new Set()); // Clear the selected items set
+                        Toast.show({
+                            text1: 'Items Deleted',
+                            text2: 'Selected items have been removed from your cart.',
+                            type: 'success',
+                            position: 'top',
+                            visibilityTime: 3000,
+                        });
+                    },
+                },
+            ],
+            { cancelable: false } // Prevent closing by tapping outside
+        );
     };
 
-    const deleteItem = (id) => {
-        closeAllSwipeables();
-        const updatedItems = cartItems.filter(item => item._id !== id);
-        setCartItems(updatedItems);
-        Toast.show({
-            text1: 'Item Deleted',
-            text2: 'The item has been removed from your cart.',
-            type: 'success',
-            position: 'top',
-            visibilityTime: 3000,
-        });
+
+
+    const deleteItem = async (id) => {
+        try {
+            await deleteCart(id); // Call the API to delete the item from the cart
+            closeAllSwipeables();
+            const updatedItems = cartItems.filter(item => item._id !== id);
+            setCartItems(updatedItems);
+            Toast.show({
+                text1: 'Item Deleted',
+                text2: 'The item has been removed from your cart.',
+                type: 'success',
+                position: 'top',
+                visibilityTime: 3000,
+            });
+        } catch (error) {
+            console.error("Error deleting item: ", error);
+            Toast.show({
+                text1: 'Error',
+                text2: 'Failed to delete item. Please try again later.',
+                type: 'error',
+                position: 'top',
+                visibilityTime: 3000,
+            });
+        }
     };
+
 
     const calculateTotalPrice = () => {
         let total = 0;
         selectedItems.forEach(id => {
             const item = cartItems.find(cartItem => cartItem._id === id);
             if (item) {
-                total += item.price_paid || 0;
+                total += item.price_paid * item.quantity || 0; // Multiply by quantity
             }
         });
         return total.toFixed(2);
     };
 
-    const handlePayment = () => {
+    const handlePayment = async () => {
         closeAllSwipeables();
-        Toast.show({
-            text1: 'Payment',
-            text2: `Proceeding to payment for $${calculateTotalPrice()}`,
-            type: 'success',
-            position: 'top',
-            visibilityTime: 3000,
-        });
+
+        // Prepare the payload with selected items
+        const payload2 = {
+            status: "waiting_paid",
+            items: Array.from(selectedItems).map(id => {
+                const item = cartItems.find(cartItem => cartItem._id === id);
+                return item ? { _id: item._id, cart_no: item.cart_no } : null;
+            }).filter(Boolean) // Filter out any null values
+        };
+
+        try {
+            const response = await UpdateStatusCart(payload2); // Call the API
+            Toast.show({
+                text1: 'Payment',
+                text2: `Proceeding to payment for $${calculateTotalPrice()}`,
+                type: 'success',
+                position: 'top',
+                visibilityTime: 3000,
+            });
+            console.log("Payment successful:", response);
+        } catch (error) {
+            console.error("Error updating cart status:", error);
+            Toast.show({
+                text1: 'Error',
+                text2: 'Failed to update cart status. Please try again later.',
+                type: 'error',
+                position: 'top',
+                visibilityTime: 3000,
+            });
+        }
     };
 
     const renderCartItem = ({ item }) => {
@@ -142,12 +229,10 @@ const CartUser = () => {
             <Swipeable
                 ref={ref => swipeableRefs.current.set(item._id, ref)} // Set the reference for this Swipeable
                 renderRightActions={rightSwipeActions}
-            // onSwipeableOpen={closeSwipeable} // Close when opened
             >
                 <TouchableOpacity
                     onPress={() => {
-                        // toggleSelection(item._id);
-                        navigation.navigate('Detailkits', { kitId: item._id });
+                        // navigation.navigate('Detailkits', { kitId: item._id });
                         closeSwipeable(); // Close swipeable when interacting with the item
                     }}
                     style={[styles.cartItem, selectedItems.has(item._id) && styles.selectedCartItem]}
@@ -161,17 +246,24 @@ const CartUser = () => {
                             />
                         </TouchableOpacity>
                     </View>
-                    <Image source={{ uri: item.product_image }} style={styles.itemImage} />
+                    <Image
+                        source={item.product_image ? { uri: item.product_image } : require('../assets/LAB-1.jpg')}
+                        style={styles.itemImage}
+                        resizeMode="contain"
+                    />
+
+
                     <View style={styles.itemTextContainer}>
                         <Text style={styles.itemName}>{item.product_name}</Text>
                         <View style={styles.priceContainer}>
-                            <Text style={styles.finalPrice}>${item.price_paid ? item.price_paid.toFixed(2) : 'N/A'}</Text>
-                            <Text style={styles.originalPrice}>${item.price ? item.price.toFixed(2) : 'N/A'}</Text>
+                            <Text style={styles.finalPrice}>${(item.price_paid * item.quantity).toFixed(2)}</Text>
+                            <Text style={styles.originalPrice}>${item.price.toFixed(2)}</Text>
                             <Text style={styles.discount}>
                                 <Text style={{ color: 'red' }}>{item.discount ? item.discount * 100 : 0}%</Text>
                             </Text>
                         </View>
-                        <Text style={styles.itemName}>Quantity</Text>
+                        {/* <Text>Type {item.product_type}</Text> */}
+                        <Text style={styles.quantity}>Quantity: {item.quantity}</Text>
                     </View>
                 </TouchableOpacity>
             </Swipeable>
@@ -187,6 +279,8 @@ const CartUser = () => {
 
     if (loading) return <ActivityIndicator style={styles.loadingContainer} size="large" color="#FF6347" />;
 
+    const groupedItems = groupItemsByType();
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
@@ -196,61 +290,68 @@ const CartUser = () => {
                 <Text style={styles.headerTitle}>Cart</Text>
             </View>
 
-            <View style={styles.buttonBar}>
-                <TouchableOpacity onPress={selectAll} style={styles.barButton}>
-                    <View style={styles.selectAllContainer}>
-                        <Text style={styles.barButtonText}>
-                            {selectedItems.size === cartItems.length ? 'Deselect All' : 'Select All'}
-                        </Text>
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => {
-                    setEditMode(!editMode);
-                    closeAllSwipeables(); // Close all swipeables on edit mode toggle
-                }} style={styles.barButton}>
-                    <Text style={styles.barButtonText}>{editMode ? 'Cancel Edit' : 'Edit'}</Text>
-                </TouchableOpacity>
-            </View>
-
-            {cartItems.length > 0 ? (
-                <FlatList
-                    style={{ padding: 20 }}
-                    data={cartItems}
-                    renderItem={renderCartItem}
-                    keyExtractor={(item) => item._id}
-                    contentContainerStyle={styles.listContent}
-                />
-            ) : (
-                <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>Your cart is empty.</Text>
+            {cartItems.length > 0 && (
+                <View style={styles.buttonBar}>
+                    <TouchableOpacity onPress={selectAll} style={styles.barButton}>
+                        <View style={styles.selectAllContainer}>
+                            <Text style={styles.barButtonText}>
+                                {selectedItems.size === cartItems.length ? 'Deselect All' : 'Select All'}
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => {
+                        setEditMode(!editMode);
+                        closeAllSwipeables(); // Close all swipeables on edit mode toggle
+                    }} style={styles.barButton}>
+                        <Text style={styles.barButtonText}>{editMode ? 'Cancel Edit' : 'Edit'}</Text>
+                    </TouchableOpacity>
                 </View>
             )}
 
-            <View style={styles.totalContainer}>
-                <TouchableOpacity onPress={selectAll} style={{ flexDirection: 'row' }}>
-                    <Icon
-                        name={selectedItems.size === cartItems.length ? 'check-square' : 'square-o'}
-                        size={24}
-                        color={selectedItems.size === cartItems.length ? '#FF6347' : '#777'}
-                    />
-                    <Text style={{ marginLeft: 10 }}>ALL</Text>
-                </TouchableOpacity>
-                {!editMode && (
-                    <Text style={styles.totalText}>Total: ${calculateTotalPrice()}</Text>
-                )}
-                {editMode && (
-                    <TouchableOpacity onPress={deleteSelectedItems} style={styles.deleteButton}>
-                        <Text style={styles.deleteButtonText}>Delete Selected</Text>
-                    </TouchableOpacity>
-                )}
-                {!editMode && (
-                    <TouchableOpacity onPress={handlePayment} style={styles.deleteButton}>
-                        <Text style={styles.deleteButtonText}>Payment</Text>
-                    </TouchableOpacity>
-                )}
-            </View>
+            {Object.keys(groupedItems).length > 0 ? (
+                <FlatList
+                    data={Object.keys(groupedItems)} // Use the keys (product types) as data
+                    renderItem={({ item: productType }) => (
+                        <View>
+                            <Text style={styles.sectionHeader}>{productType}</Text>
+                            <FlatList
+                                data={groupedItems[productType]}
+                                renderItem={renderCartItem}
+                                keyExtractor={(item) => item._id}
+                            />
+                        </View>
+                    )}
+                    keyExtractor={(item) => item}
+                />
+            ) : (
+                <Text style={styles.emptyCart}>Your cart is empty.</Text>
+            )}
 
-            <Toast />
+            {cartItems.length > 0 && (
+                <View style={styles.totalContainer}>
+                    <TouchableOpacity onPress={selectAll} style={{ flexDirection: 'row' }}>
+                        <Icon
+                            name={selectedItems.size === cartItems.length ? 'check-square' : 'square-o'}
+                            size={24}
+                            color={selectedItems.size === cartItems.length ? '#FF6347' : '#777'}
+                        />
+                        <Text style={{ marginLeft: 10 }}>ALL</Text>
+                    </TouchableOpacity>
+                    {!editMode && (
+                        <Text style={styles.totalText}>Total: ${calculateTotalPrice()}</Text>
+                    )}
+                    {editMode && (
+                        <TouchableOpacity onPress={deleteSelectedItems} style={styles.deleteButton}>
+                            <Text style={styles.deleteButtonText}>Delete Selected</Text>
+                        </TouchableOpacity>
+                    )}
+                    {!editMode && (
+                        <TouchableOpacity onPress={handlePayment} style={styles.deleteButton}>
+                            <Text style={styles.deleteButtonText}>Payment</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
+            )}
         </SafeAreaView>
     );
 };
@@ -275,6 +376,11 @@ const styles = StyleSheet.create({
     },
     headerButton: {
         padding: 10,
+    },
+    sectionHeader: {
+        padding: 10,
+        fontSize: 18,
+        fontWeight: 'bold'
     },
     buttonBar: {
         flexDirection: 'row',
@@ -374,6 +480,10 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     totalContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
         paddingLeft: 10,
         paddingRight: 10,
         backgroundColor: '#FFF3E0',
@@ -394,6 +504,11 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         alignItems: 'center',
         paddingHorizontal: 20,
+    },
+    image: {
+        width: '100%',
+        height: 300,
+        resizeMode: 'contain',
     },
     paymentButtonText: {
         color: '#FFFFFF',
@@ -421,6 +536,16 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 18,
     },
+    emptyCart: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        top: 300,
+        left: 140
+    }
 });
 
 export default CartUser;
+
+
+

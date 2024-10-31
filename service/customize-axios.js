@@ -6,8 +6,8 @@ const axiosInstance = axios.create({
   // baseURL: 'http://192.168.88.161:8080/api',
   // baseURL: 'http://10.87.40.153:8080/api',
   // baseURL: 'http://192.168.1.3:8080/api',
-  baseURL: 'http://192.168.1.3:8080/api',
-  // baseURL: 'http://10.87.13.176:8080/api',
+  // baseURL: 'http://192.168.1.3:8080/api',
+  baseURL: 'http://10.87.13.176:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },

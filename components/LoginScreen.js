@@ -70,7 +70,10 @@ function LoginScreen() {
 					text1: 'Login Successful',
 					text2: 'Welcome back!',
 				});
-				navigate.navigate('HomeScreen')
+				navigate.reset({
+					index: 0,
+					routes: [{ name: 'Home' }], // Navigate to Home
+				});
 				console.log('Token:', response.data.token);
 			} else {
 				console.log('Error in here');
@@ -112,12 +115,14 @@ function LoginScreen() {
 						autoCapitalize="none"
 					/>
 					{errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
-
+					<TouchableOpacity onPress={() => navigate.navigate('ForgotPassword')}>
+						<Text>Forgot password</Text>
+					</TouchableOpacity>
 					<TouchableOpacity style={styles.buttonLogin} onPress={handleLogin}>
 						<Text style={styles.buttonText}>Login</Text>
 					</TouchableOpacity>
 
-					<TouchableOpacity style={styles.buttonLogin} onPress={() => navigate.navigate("Home", { screen: 'Register' })}>
+					<TouchableOpacity style={styles.buttonLogin} onPress={() => navigate.navigate('Register')}>
 						<Text style={styles.registerLink}>Create new Account</Text>
 					</TouchableOpacity>
 				</View>

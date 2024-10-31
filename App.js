@@ -18,6 +18,8 @@ import RegisterScreen from "./components/RegisterScreen";
 import Combo from "./components/Combo";
 import CartUser from "./components/CartUser";
 import DetailCombo from "./components/DetailCombo";
+import EditProfile from "./components/EditProfile";
+import ForgotPasswordScreen from "./components/ForgotPasswordScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -42,15 +44,16 @@ const HomeStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
-
     <Stack.Screen
-      name="Login"
-      component={LoginScreen}
+      name="DetailCombo"
+      component={DetailCombo}
       options={{
-        title: "Login",
+        title: "Combo Detail",
         headerTitleStyle: styles.headerTitle,
+        headerShown: false,
       }}
     />
+
     <Stack.Screen
       name="CartUser"
       component={CartUser}
@@ -70,6 +73,14 @@ const HomeStack = () => (
       }}
     />
     <Stack.Screen
+      name="Login"
+      component={LoginScreen}
+      options={{
+        title: "Login",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
       name="Register"
       component={RegisterScreen}
       options={{
@@ -77,12 +88,11 @@ const HomeStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
-
     <Stack.Screen
-      name="Profile"
-      component={Profile}
+      name="ForgotPassword"
+      component={ForgotPasswordScreen}
       options={{
-        title: "Profile",
+        title: "Forgot Password",
         headerTitleStyle: styles.headerTitle,
       }}
     />
@@ -105,6 +115,7 @@ const ComboStack = () => (
       options={{
         title: "Combo Detail",
         headerTitleStyle: styles.headerTitle,
+        headerShown: false,
       }}
     />
     <Stack.Screen
@@ -114,14 +125,6 @@ const ComboStack = () => (
         title: "Cart User",
         headerTitleStyle: styles.headerTitle,
         headerShown: false,
-      }}
-    />
-    <Stack.Screen
-      name="Profile"
-      component={Profile}
-      options={{
-        title: "Profile",
-        headerTitleStyle: styles.headerTitle,
       }}
     />
   </Stack.Navigator>
@@ -147,7 +150,7 @@ const KitsStack = () => (
         headerShown: false,
       }}
     />
-     <Stack.Screen
+    <Stack.Screen
       name="Detaillabs"
       component={Detaillabs}
       options={{
@@ -163,14 +166,6 @@ const KitsStack = () => (
         title: "Cart User",
         headerTitleStyle: styles.headerTitle,
         headerShown: false,
-      }}
-    />
-    <Stack.Screen
-      name="Profile"
-      component={Profile}
-      options={{
-        title: "Profile",
-        headerTitleStyle: styles.headerTitle,
       }}
     />
   </Stack.Navigator>
@@ -204,14 +199,6 @@ const LabsStack = () => (
         headerShown: false,
       }}
     />
-    <Stack.Screen
-      name="Profile"
-      component={Profile}
-      options={{
-        title: "Profile",
-        headerTitleStyle: styles.headerTitle,
-      }}
-    />
   </Stack.Navigator>
 );
 
@@ -233,11 +220,48 @@ const FavoritesStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
+  </Stack.Navigator>
+);
+
+const ProfileStack = () => (
+  <Stack.Navigator>
     <Stack.Screen
       name="Profile"
       component={Profile}
       options={{
         title: "Profile",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfile}
+      options={{
+        title: "Update Password",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="Login"
+      component={LoginScreen}
+      options={{
+        title: "Login",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="ForgotPassword"
+      component={ForgotPasswordScreen}
+      options={{
+        title: "Forgot Password",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="Register"
+      component={RegisterScreen}
+      options={{
+        title: "Create New Account",
         headerTitleStyle: styles.headerTitle,
       }}
     />
@@ -309,7 +333,7 @@ const App = () => {
         />
         <Tab.Screen
           name="Profile"
-          component={Profile}
+          component={ProfileStack}
           options={{ title: "Profile", headerShown: false, unmountOnBlur: true }}
         />
       </Tab.Navigator>
