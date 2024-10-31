@@ -80,12 +80,41 @@ const Profile = () => {
                     <View style={styles.inputField}>
                         <Text style={styles.value}>{dayjs(userProfile.dob).format('DD/MM/YYYY')}</Text>
                     </View>
+
+                    <View>
+                        <TouchableOpacity
+                            style={styles.editButton}
+                            onPress={() => navigation.navigate('Delivery')}
+                        >
+                            <View style={styles.iconTextContainer}>
+                                <Icon name="truck" size={30} color="#4CAF50" style={styles.headerIcon} />
+                                <Text style={styles.iconText}>Delivery</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+
                     <View>
                         <TouchableOpacity
                             style={styles.editButton}
                             onPress={() => navigation.navigate('EditProfile', { userProfile })}
                         >
                             <Text>Edit Profile</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View>
+                        <TouchableOpacity
+                            style={styles.editButton}
+                            onPress={() => navigation.navigate('PurchaseHistory', { userProfile })}
+                        >
+                            <Text>Purchase History</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View>
+                        <TouchableOpacity
+                            style={styles.editButton}
+                            onPress={() => navigation.navigate('Login', { userProfile })}
+                        >
+                            <Text>Login</Text>
                         </TouchableOpacity>
                     </View>
                     <View>
@@ -183,5 +212,14 @@ const styles = StyleSheet.create({
         borderColor: '#04bd3f',
         borderWidth: 1,
         justifyContent: 'center',
+    },
+    iconTextContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    iconText: {
+        marginLeft: 5, // spacing between icon and text
+        fontSize: 16,
+        color: '#4CAF50',
     },
 });

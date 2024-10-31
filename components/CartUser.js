@@ -180,18 +180,28 @@ const CartUser = () => {
 
     const handlePayment = async () => {
         closeAllSwipeables();
-
-        // Prepare the payload with selected items
+    
+        if (selectedItems.size === 0) {
+            Toast.show({
+                text1: 'No Items Selected',
+                text2: 'Please select items to proceed with payment.',
+                type: 'info',
+                position: 'top',
+                visibilityTime: 3000,
+            });
+            return;
+        }
+    
         const payload2 = {
             status: "waiting_paid",
             items: Array.from(selectedItems).map(id => {
                 const item = cartItems.find(cartItem => cartItem._id === id);
                 return item ? { _id: item._id, cart_no: item.cart_no } : null;
-            }).filter(Boolean) // Filter out any null values
+            }).filter(Boolean),
         };
-
+    
         try {
-            const response = await UpdateStatusCart(payload2); // Call the API
+            await UpdateStatusCart(payload2);
             Toast.show({
                 text1: 'Payment',
                 text2: `Proceeding to payment for $${calculateTotalPrice()}`,
@@ -199,7 +209,8 @@ const CartUser = () => {
                 position: 'top',
                 visibilityTime: 3000,
             });
-            console.log("Payment successful:", response);
+            navigation.navigate('CheckOut', { selectedItems, cartItems, calculateTotalPrice: calculateTotalPrice() });
+            setSelectedItems(new Set()); // Clear selection
         } catch (error) {
             console.error("Error updating cart status:", error);
             Toast.show({
@@ -211,6 +222,7 @@ const CartUser = () => {
             });
         }
     };
+    
 
     const renderCartItem = ({ item }) => {
         const rightSwipeActions = () => (
