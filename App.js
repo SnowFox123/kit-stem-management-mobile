@@ -20,6 +20,9 @@ import CartUser from "./components/CartUser";
 import DetailCombo from "./components/DetailCombo";
 import EditProfile from "./components/EditProfile";
 import ForgotPasswordScreen from "./components/ForgotPasswordScreen";
+import DeliveryStatus from "./components/DeliveryStatus";
+import PurchaseHistory from "./components/PurchaseHistory";
+import CheckOut from "./components/CheckOut";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -53,7 +56,15 @@ const HomeStack = () => (
         headerShown: false,
       }}
     />
-
+    <Stack.Screen
+      name="CheckOut"
+      component={CheckOut}
+      options={{
+        title: "CheckOut",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+      }}
+    />
     <Stack.Screen
       name="CartUser"
       component={CartUser}
@@ -127,6 +138,15 @@ const ComboStack = () => (
         headerShown: false,
       }}
     />
+    <Stack.Screen
+      name="CheckOut"
+      component={CheckOut}
+      options={{
+        title: "CheckOut",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+      }}
+    />
   </Stack.Navigator>
 );
 
@@ -155,6 +175,15 @@ const KitsStack = () => (
       component={Detaillabs}
       options={{
         title: "Lab Detail",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+      }}
+    />
+    <Stack.Screen
+      name="CheckOut"
+      component={CheckOut}
+      options={{
+        title: "CheckOut",
         headerTitleStyle: styles.headerTitle,
         headerShown: false,
       }}
@@ -199,6 +228,15 @@ const LabsStack = () => (
         headerShown: false,
       }}
     />
+    <Stack.Screen
+      name="CheckOut"
+      component={CheckOut}
+      options={{
+        title: "CheckOut",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+      }}
+    />
   </Stack.Navigator>
 );
 
@@ -220,6 +258,15 @@ const FavoritesStack = () => (
         headerTitleStyle: styles.headerTitle,
       }}
     />
+    <Stack.Screen
+      name="CheckOut"
+      component={CheckOut}
+      options={{
+        title: "CheckOut",
+        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+      }}
+    />
   </Stack.Navigator>
 );
 
@@ -238,6 +285,22 @@ const ProfileStack = () => (
       component={EditProfile}
       options={{
         title: "Update Password",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="Delivery"
+      component={DeliveryStatus}
+      options={{
+        title: "Delivery",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="PurchaseHistory"
+      component={PurchaseHistory}
+      options={{
+        title: "PurchaseHistory",
         headerTitleStyle: styles.headerTitle,
       }}
     />
@@ -294,7 +357,6 @@ const App = () => {
           tabBarActiveTintColor: "rgb(0, 110, 173)",
           tabBarInactiveTintColor: "gray",
           tabBarStyle: ((route) => {
-            console.log(route.name)
             const routeName = route.name;
 
             // console.log("🚀 ~ App ~ routeName:", routeName)

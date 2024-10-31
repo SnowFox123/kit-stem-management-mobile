@@ -136,6 +136,20 @@ export const getCart = async (payload) => {
 };
 
 
+
+export const getPurchase = async (payload) => {
+    try {
+        const response = await axiosInstance.post('/purchase/purchase-history', payload);
+
+        // console.log(response)
+        return response; // The interceptor returns only the data, so this is equivalent to returning response.data
+    } catch (error) {
+        console.error("Error fetching data: ", error);
+        throw error; // Throw the error for handling in the component
+    }
+};
+
+
 export const UpdateStatusCart = async (payload2) => {
     try {
         const response = await axiosInstance.put('/cart/update-status', payload2);
