@@ -27,18 +27,6 @@ const HomeScreen = () => {
         setUserProfile(currentUser);
     }
 
-    const fetchCategories = async () => {
-        try {
-            const response = await getAllCategories();
-            console.log('====================================');
-            console.log("category", response);
-            console.log('====================================');
-            setCategories(response);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
     const fetchKits = async () => {
         try {
             const response = await getKit(
@@ -77,7 +65,6 @@ const HomeScreen = () => {
 
     useEffect(() => {
         fetchBlogs();
-        fetchCategories();
         fetchKits();
         getCurrentUser();
     }, []);
@@ -135,16 +122,6 @@ const HomeScreen = () => {
                     ))}
                 </ScrollView>
             </View>
-
-            {/* Categories Section */}
-            {/* <View style={styles.categorySection}>
-                <Text style={styles.sectionTitle}>Categories</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryContainer}>
-                    {categories.map((category) => (
-                        <Tag name={category.name} key={category._id} />
-                    ))}
-                </ScrollView>
-            </View> */}
 
             <View style={styles.featuredSection}>
                 <Text style={styles.sectionTitle}>New Kits & Popular Kits</Text>
