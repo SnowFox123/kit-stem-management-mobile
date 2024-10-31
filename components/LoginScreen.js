@@ -112,7 +112,9 @@ function LoginScreen() {
 						autoCapitalize="none"
 					/>
 					{errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
-
+					<TouchableOpacity onPress={() => navigate.navigate('ForgotPassword')}>
+						<Text>Forgot password</Text>
+					</TouchableOpacity>
 					<TouchableOpacity style={styles.buttonLogin} onPress={handleLogin}>
 						<Text style={styles.buttonText}>Login</Text>
 					</TouchableOpacity>

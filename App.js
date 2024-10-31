@@ -19,6 +19,7 @@ import Combo from "./components/Combo";
 import CartUser from "./components/CartUser";
 import DetailCombo from "./components/DetailCombo";
 import EditProfile from "./components/EditProfile";
+import ForgotPasswordScreen from "./components/ForgotPasswordScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -56,6 +57,14 @@ const HomeStack = () => (
       component={LoginScreen}
       options={{
         title: "Login",
+        headerTitleStyle: styles.headerTitle,
+      }}
+    />
+    <Stack.Screen
+      name="ForgotPassword"
+      component={ForgotPasswordScreen}
+      options={{
+        title: "Forgot Password",
         headerTitleStyle: styles.headerTitle,
       }}
     />
