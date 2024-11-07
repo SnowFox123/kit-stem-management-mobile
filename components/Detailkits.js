@@ -179,6 +179,25 @@ const Detailkits = ({ route }) => {
                             <Text style={styles.descriptionTitle}>Description:</Text>
                             <Text style={styles.description}>{kit.description || "No description available."}</Text>
 
+                            <Text style={styles.labsTitle}>Recommended Labs:</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScrollView}>
+                                {availableLabs.length > 0 ? (
+                                    availableLabs.map((lab) => (
+                                        <TouchableOpacity
+                                            onPress={() => navigation.navigate('Detaillabs', { kitId: lab._id })}>
+
+                                            <View key={lab._id} style={styles.labItem}>
+                                                <Text style={styles.labTitle}>{lab.name}</Text>
+                                                <Text style={styles.labDescription}>{lab.description}</Text>
+                                                <Text style={styles.labPrice}>Price: ${lab.price.toFixed(2)}</Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    ))
+                                ) : (
+                                    <Text style={styles.noLabsText}>No available labs.</Text>
+                                )}
+                            </ScrollView>
+
                             {/* Star Rating Filter */}
                             <Text style={styles.filterTitle}>Filter by Rating:</Text>
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScrollView}>

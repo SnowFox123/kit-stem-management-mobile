@@ -180,7 +180,7 @@ const Combo = () => {
                 <TextInput
                     ref={searchInputRef}
                     style={styles.searchInput}
-                    placeholder="Search by kits name..."
+                    placeholder="Search by combo name..."
                     value={searchQuery}
                     onChangeText={handleSearchChange}
                     onSubmitEditing={handleSearch}
@@ -214,7 +214,7 @@ const Combo = () => {
             {isLoading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="rgb(0, 110, 173)" />
-                    <Text style={styles.loadingText}>Fetching Kits Details...</Text>
+                    <Text style={styles.loadingText}>Fetching combo Details...</Text>
                 </View>
             ) : (
                 <FlatList
